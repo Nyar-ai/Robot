@@ -197,8 +197,8 @@ targets:
               isChecked: true
               isStartup: true
               mem:
-                size: ""
-                startAddr: ""
+                size: "0x100000"
+                startAddr: "0x08000000"
               tag: IROM
             - id: 2
               isChecked: true
@@ -243,7 +243,7 @@ targets:
         proType: 1
         speed: 8000
       STLink:
-        address: ""
+        address: "0x08000000"
         bin: ""
         elFile: None
         optionBytes: .eide/robot.st.option.bytes.ini
