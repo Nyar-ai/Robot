@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "PC_UnitTest",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/../Core/Inc"
+            ],
+            "defines": [],
+            "compilerPath": "C:/MinGW/bin/gcc.exe",
+            "cStandard": "c99",
+            "intelliSenseMode": "gcc-x86"
+        }
+    ],
+    "version": 4
+}
