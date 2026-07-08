@@ -34,6 +34,9 @@ virtualFolder:
                 - path: ../Core/Src/mecanum.c
                 - path: ../Core/Src/chassis.c
                 - path: ../Core/Src/stepper.c
+                - path: ../Core/Src/dma.c
+                - path: ../Core/Src/mpu6050.c
+                - path: ../Core/Src/system_stm32f4xx.c
               folders: []
     - name: Drivers
       files: []
