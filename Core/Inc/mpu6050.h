@@ -117,4 +117,10 @@ void MPU6050_IntegrateYaw(float dt);
  */
 void MPU6050_SetYaw(float yaw_deg);
 
+/**
+ * @brief DMA 完成回调入口(供 HAL_I2C_MemRxCpltCallback 在中断里调用)
+ *        解析 14 字节 → 更新 yaw_rate + 置完成标志
+ */
+void MPU6050_OnDMAComplete(void);
+
 #endif /* __MPU6050_H */
