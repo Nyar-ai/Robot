@@ -44,6 +44,7 @@ robot\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
 robot\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 robot\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 robot\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
+robot\main.o: ../Core/Inc/dma.h
 robot\main.o: ../Core/Inc/i2c.h
 robot\main.o: ../Core/Inc/tim.h
 robot\main.o: ../Core/Inc/usart.h
