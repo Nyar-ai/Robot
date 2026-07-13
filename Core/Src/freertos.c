@@ -170,7 +170,7 @@ void StartDefaultTask(void *argument)
     {
     case DS_MOVE1:
       /* 平移到世界坐标 (1000, 0) mm */
-      done = move_to_coordinate(2000.0f, 0.0f);
+      done = move_to_coordinate(200, 0.0f);
       if (done) {
         chassis_uart_log("[1] reached (1000,0)\r\n");
         settle = 30;          /* 约 300ms 停顿, 便于观察 */
@@ -327,4 +327,3 @@ static void chassis_uart_log(const char *fmt, ...)
 }
 
 /* USER CODE END Application */
-

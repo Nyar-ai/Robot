@@ -1,6 +1,6 @@
 /**
  * @file    test_scurve.c
- * @brief   S形曲线(七段式)速度规划器单元测试
+ * @brief   梯形曲线(三段式)速度规划器单元测试
  *
  * 验证 scurve.h 的:
  *   - 基本到位与位置精度
@@ -14,8 +14,8 @@
 /* 测试套件入口(由 test_main.c 调用) */
 void test_scurve_run(void);
 
-/* 默认测试参数(量纲 mm) */
-static const Scurve_Config DEF_CFG = { 400.0f, 800.0f, 2000.0f };
+/* 默认测试参数(量纲 mm): {max_speed, max_accel, min_speed} —— 对齐 project 3 参数模型 */
+static const Scurve_Config DEF_CFG = { 400.0f, 800.0f, 0.0f };
 
 /* ---- 各用例 ---- */
 
@@ -133,7 +133,7 @@ static void test_nonpositive_dt(void)
 /* ---- 套件汇总 ---- */
 void test_scurve_run(void)
 {
-    TEST_SUITE("S形曲线规划器");
+    TEST_SUITE("梯形曲线规划器");
     test_basic_reach();
     test_speed_limit();
     test_negative_target();
