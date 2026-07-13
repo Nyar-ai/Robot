@@ -88,7 +88,10 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  /* 上电延时, 等电源/电压稳定后再初始化外设和启动 RTOS.
+   * 放在 HAL_Init() 之后(Systick 已启动, HAL_Delay 可用),
+   * 在外设初始化之前, 确保电压稳定后再配置 I2C/定时器等敏感外设. */
+  HAL_Delay(3000);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
