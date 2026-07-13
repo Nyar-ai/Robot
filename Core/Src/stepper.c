@@ -110,9 +110,12 @@ void Stepper_SetSpeed(uint8_t id, float step_s)
 
     float v = stepper_fabs(step_s);
 
-    /* 速度过低 → 停 PWM */
+    /* 速度过低 → 软停止(不丢步)
+     * 不直接关 PWM(会截断当前脉冲导致丢步), 而是把 CCR 设为 0.
+     * 因 CCR 预装载已开启(见 Init), 写入的 0 会在当前脉冲周期结束
+     * (CNT 归零的更新事件)时才生效 → 最后一个高电平完整输出后再停止. */
     if (v < STEPPER_MIN_STEP_S) {
-        Stepper_StopPWM(b);
+        __HAL_TIM_SET_COMPARE(b->htim, b->channel, 0);
         return;
     }
 
