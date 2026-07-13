@@ -57,6 +57,25 @@
 /* GYRO_CONFIG=0x18 → ±2000°/s, 灵敏度 16.4 LSB/(°/s) */
 #define MPU6050_GYRO_SENSITIVITY   16.4f
 
+/* ---- 零漂抑制配置(分层策略) ---- */
+/* 1) DLPF 降噪 + 1kHz 采样匹配: DLPF_CFG=3→带宽44Hz/延迟4.9ms, 0=关闭(5.1kHz,噪声大) */
+#define MPU6050_DLPF_CFG            3
+/* 2) 死区: |角速度|<此值视为0, 掐断残余零漂的纯积分(deg/s) */
+#define MPU6050_DEADZONE_DPS        0.5f
+/* 3) 校准: 预热丢弃样本数 + 采样缓冲上限(静态分配, 避免占栈) */
+#define MPU6050_CALIB_WARMUP        200
+#define MPU6050_CALIB_BUF           256
+/* 4) 运行期自适应零偏跟踪: 仅判"静止"时用大τ一阶低通更新零偏 */
+#define MPU6050_BIAS_TRACK_TAU      5.0f    /* 时间常数(s), 越大跟踪越慢越稳 */
+/* 5) 静止检测滑窗(@1kHz 时 200 样本=200ms)与判定阈值 */
+#define MPU6050_STATIC_WINDOW       200
+#define MPU6050_STATIC_RATE_THR     2.0f    /* 窗口去偏|均值|阈值(deg/s) */
+#define MPU6050_STATIC_VAR_THR      1.0f    /* 窗口方差阈值((deg/s)^2) */
+/* 6) 静止自动重校准: 持续静止达到此时长则用窗口均值覆盖零偏(ms) */
+#define MPU6050_RECALIB_STATIC_MS   2000
+/* 7) 温度补偿: bias(T)=bias0 + k·(T-T_calib), k 标定后填值(LSB/°C), 0=不补偿 */
+#define MPU6050_BIAS_TEMP_COEF      0.0f
+
 /* ---- 一次读取的数据块(从 0x3B 起 14 字节) ---- */
 typedef struct {
     int16_t accel_x;
@@ -122,5 +141,23 @@ void MPU6050_SetYaw(float yaw_deg);
  *        解析 14 字节 → 更新 yaw_rate + 置完成标志
  */
 void MPU6050_OnDMAComplete(void);
+
+/**
+ * @brief 取当前 MPU6050 片上温度(°C)
+ * @note  公式: T = TEMP_OUT/340 + 36.53 (寄存器 0x41/0x42)
+ */
+float MPU6050_GetTempC(void);
+
+/**
+ * @brief 当前是否被判为静止(用于自适应零偏/重校准判断)
+ * @return true=近 MPU6050_STATIC_WINDOW 样本被判静止
+ */
+bool MPU6050_IsStatic(void);
+
+/**
+ * @brief 强制立即触发一次静止重校准(覆盖运行期零偏与温度基准)
+ * @note  调用时车必须静止; 内部读 MPU6050_STATIC_WINDOW 个样本重算零偏
+ */
+void MPU6050_ForceRecalibrate(void);
 
 #endif /* __MPU6050_H */

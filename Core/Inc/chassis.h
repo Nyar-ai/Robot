@@ -25,15 +25,18 @@
 #define CHASSIS_POS_TOL_MM        2.0f    /* 位置到达阈值(mm)   */
 #define CHASSIS_ANG_TOL_DEG       1.0f    /* 角度到达阈值(deg)  */
 
-/* ---- 默认 S 曲线参数(平移, 量纲 mm) ---- */
+/* ---- 默认 S 曲线参数(平移, 量纲 mm) ----
+ * 启动抖动抑制: ACCEL/JERK 调低(原 800/2000), MIN_SPEED 跳过低速死区 */
 #define CHASSIS_TRANS_MAX_SPEED   400.0f    /* mm/s   */
-#define CHASSIS_TRANS_MAX_ACCEL   800.0f    /* mm/s^2 */
-#define CHASSIS_TRANS_MAX_JERK    2000.0f   /* mm/s^3 */
+#define CHASSIS_TRANS_MAX_ACCEL   410.0f    /* mm/s^2 (原800, 降半减小启动冲击) */
+#define CHASSIS_TRANS_MAX_JERK    901.0f   /* mm/s^3 (原2000, 降半使加速度上升更缓) */
+#define CHASSIS_TRANS_MIN_SPEED   35.0f     /* mm/s   (启动起步速度, 跳过电机死区≈0.94) */
 
 /* ---- 默认 S 曲线参数(旋转, 量纲 deg) ---- */
 #define CHASSIS_ROT_MAX_SPEED     180.0f    /* deg/s   */
-#define CHASSIS_ROT_MAX_ACCEL     360.0f    /* deg/s^2 */
-#define CHASSIS_ROT_MAX_JERK      900.0f    /* deg/s^3 */
+#define CHASSIS_ROT_MAX_ACCEL     200.0f    /* deg/s^2 (原360, 旋转惯量大需更缓) */
+#define CHASSIS_ROT_MAX_JERK      500.0f    /* deg/s^3 (原900, 降半) */
+#define CHASSIS_ROT_MIN_SPEED     12.0f     /* deg/s   (旋转启动起步速度) */
 
 /* ---- 控制周期 ---- */
 #define CHASSIS_TICK_DT_S         0.001f    /* chassis_tick 步长 1ms */

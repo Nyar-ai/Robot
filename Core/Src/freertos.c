@@ -170,11 +170,11 @@ void StartDefaultTask(void *argument)
     {
     case DS_MOVE1:
       /* 平移到世界坐标 (1000, 0) mm */
-      done = move_to_coordinate(1000.0f, 0.0f);
+      done = move_to_coordinate(2000.0f, 0.0f);
       if (done) {
         chassis_uart_log("[1] reached (1000,0)\r\n");
         settle = 30;          /* 约 300ms 停顿, 便于观察 */
-        demo_state = DS_TURN;
+        demo_state = DS_DONE;
       }
       break;
     case DS_TURN:
@@ -238,9 +238,12 @@ void StartGyroTask(void *argument)
   }
   chassis_uart_log("[gyro] MPU6050 init ok, calibrating yaw bias (keep still)...\r\n");
 
-  /* 上电静止校准零漂(读 200 次, 约 0.4s). 校准期间车必须静止! */
-  MPU6050_CalibrateYaw(200);
-  chassis_uart_log("[gyro] calib done\r\n");
+  /* 上电静止校准零漂: 预热丢弃 + 3σ 鲁棒均值 + 记录温度基准.
+   * 采样数受 MPU6050_CALIB_BUF(256) 限制; 校准期间车必须静止!
+   * 预热约 0.4s + 采集约 0.5s, 共约 0.9s. */
+  MPU6050_CalibrateYaw(256);
+  chassis_uart_log("[gyro] calib done, T=%.1fC; runtime bias-tracking & auto-recalib ON\r\n",
+                   MPU6050_GetTempC());
 
   /* 创建 DMA 完成信号量 */
   g_i2c_dma_sem = xSemaphoreCreateBinary();

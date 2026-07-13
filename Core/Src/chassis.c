@@ -84,14 +84,16 @@ static float fabsf_local(float v) { return v < 0.0f ? -v : v; }
 void chassis_init(void)
 {
     Scurve_Config trans_cfg = {
-        CHASSIS_TRANS_MAX_SPEED,
-        CHASSIS_TRANS_MAX_ACCEL,
-        CHASSIS_TRANS_MAX_JERK
+        .max_speed = CHASSIS_TRANS_MAX_SPEED,
+        .max_accel = CHASSIS_TRANS_MAX_ACCEL,
+        .max_jerk  = CHASSIS_TRANS_MAX_JERK,
+        .min_speed = CHASSIS_TRANS_MIN_SPEED
     };
     Scurve_Config rot_cfg = {
-        CHASSIS_ROT_MAX_SPEED,
-        CHASSIS_ROT_MAX_ACCEL,
-        CHASSIS_ROT_MAX_JERK
+        .max_speed = CHASSIS_ROT_MAX_SPEED,
+        .max_accel = CHASSIS_ROT_MAX_ACCEL,
+        .max_jerk  = CHASSIS_ROT_MAX_JERK,
+        .min_speed = CHASSIS_ROT_MIN_SPEED
     };
     Scurve_Init(&g_chassis.trans_planner, &trans_cfg);
     Scurve_Init(&g_chassis.rot_planner,   &rot_cfg);

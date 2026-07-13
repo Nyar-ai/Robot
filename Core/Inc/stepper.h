@@ -39,7 +39,7 @@
 
 /* ---- 步进电机参数(按你的实车/驱动板拨码改) ---- */
 #define STEPPER_STEPS_PER_REV      3200.0f   /* 200步/圈 × 16细分 = 3200 步/圈 */
-#define STEPPER_WHEEL_RADIUS_MM    25.0f     /* 麦轮半径(必须与 mecanum.h 一致) */
+#define STEPPER_WHEEL_RADIUS_MM    30.0f     /* 麦轮半径(必须与 mecanum.h 一致) */
 /* 线速度→步速换算: step_s = mm_s / (2π·r) × steps_per_rev */
 
 /* ---- 定时器统一工作频率 ---- */
@@ -48,6 +48,11 @@
 /* ---- 速度限幅(避免丢步/超出16位ARR范围) ---- */
 #define STEPPER_MIN_STEP_S         16.0f     /* 1MHz/65535 ≈ 15.26, 取16留余量 */
 #define STEPPER_MAX_STEP_S         50000.0f  /* 最高步/秒(按电机/驱动板能力调) */
+
+/* ---- 速度变化率限幅(平滑PWM频率跳变, 抑制启动抖动) ----
+ * 相邻两次 SetSpeed 调用(1ms周期)间, 允许的最大步速变化量(步/s)
+ * 超过则限幅, 相当于底层加一道低通; 0=不限幅 */
+#define STEPPER_MAX_DELTA_STEP_S   250     /* 步/s (整数, 用于#if预处理) */
 
 /**
  * @brief 初始化 4 个电机:

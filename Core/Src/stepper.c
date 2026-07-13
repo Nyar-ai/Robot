@@ -34,6 +34,9 @@ static const Stepper_Bind s_bind[STEPPER_NUM] = {
     { &htim9, TIM_CHANNEL_1, GPIOD, GPIO_PIN_7,  0 },
 };
 
+/* 每个电机上一次下发的速度(步/s, 带符号), 用于底层速度变化率限幅 */
+static float s_last_step_s[STEPPER_NUM];
+
 /* ---- 内部辅助 ---- */
 
 /* 启动某通道 PWM(对 TIM8 额外使能主输出 MOE) */
@@ -93,6 +96,17 @@ void Stepper_SetSpeed(uint8_t id, float step_s)
 {
     if (id >= STEPPER_NUM) return;
     const Stepper_Bind *b = &s_bind[id];
+
+    /* ---- 底层速度变化率限幅(平滑PWM跳变, 抑制抖动) ---- */
+#if STEPPER_MAX_DELTA_STEP_S > 0
+    float last = s_last_step_s[id];
+    float delta = step_s - last;
+    float d_abs = delta < 0.0f ? -delta : delta;
+    if (d_abs > STEPPER_MAX_DELTA_STEP_S) {
+        step_s = last + (delta < 0.0f ? -STEPPER_MAX_DELTA_STEP_S : STEPPER_MAX_DELTA_STEP_S);
+    }
+#endif
+    s_last_step_s[id] = step_s;
 
     float v = stepper_fabs(step_s);
 

@@ -36,6 +36,7 @@ typedef struct {
     float max_speed;  /* 最大速度(量纲与位置一致/s)   */
     float max_accel;  /* 最大加速度(/s^2)            */
     float max_jerk;   /* 最大加加速度(/s^3)          */
+    float min_speed;  /* 启动/收尾最小速度(/s, 跳过低速死区, 0=从0起步) */
 } Scurve_Config;
 
 /* 规划器实例 */
