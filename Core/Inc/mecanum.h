@@ -36,6 +36,8 @@
 
 /* 若实测左右平移方向反了, 改为 -1.0f */
 #define MECANUM_FLIP_Y            1.0f
+/* 若实测旋转方向反了, 改为 -1.0f */
+#define TURN_FLIP_Y               -1.0F
 
 /**
  * @brief 设置几何参数(不想用宏可运行时覆盖)

@@ -22,7 +22,7 @@ void Mecanum_Inverse(float vx, float vy, float omega, float w[MECANUM_NUM])
     vy = vy * MECANUM_FLIP_Y;
 
     /* (Lx+Ly) 单位 mm, omega 单位 rad/s → 该项单位 mm/s */
-    float k = (g_lx + g_ly) * omega;
+    float k = TURN_FLIP_Y*(g_lx + g_ly) * omega;
 
     /* X 布局(LF/RB 滚子 \, RF/LB 滚子 /) */
     w[MECANUM_LF] = vx - vy - k;

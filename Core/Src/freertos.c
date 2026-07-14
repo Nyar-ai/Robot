@@ -157,7 +157,7 @@ void StartDefaultTask(void *argument)
   (void)argument;
 
   enum { DS_MOVE1, DS_TURN, DS_MOVE2, DS_DONE };
-  uint8_t demo_state = DS_MOVE1;
+  uint8_t demo_state = DS_TURN;
   uint8_t log_div = 0;
   uint8_t settle = 0;  /* 到达后短暂停留计数 */
 
@@ -170,7 +170,7 @@ void StartDefaultTask(void *argument)
     {
     case DS_MOVE1:
       /* 平移到世界坐标 (1000, 0) mm */
-      done = move_to_coordinate(200, 0.0f);
+      done = move_to_coordinate(500.0f, 500.0f);
       if (done) {
         chassis_uart_log("[1] reached (1000,0)\r\n");
         settle = 30;          /* 约 300ms 停顿, 便于观察 */
@@ -184,13 +184,13 @@ void StartDefaultTask(void *argument)
       if (done) {
         chassis_uart_log("[2] reached head=90\r\n");
         settle = 30;
-        demo_state = DS_MOVE2;
+        demo_state = DS_DONE;
       }
       break;
     case DS_MOVE2:
       if (settle > 0) { settle--; break; }
       /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
-      done = move_to_coordinate(1000.0f, 500.0f);
+      done = move_to_coordinate(500.0f, 500.0f);
       if (done) {
         chassis_uart_log("[3] reached (1000,500), demo done\r\n");
         demo_state = DS_DONE;

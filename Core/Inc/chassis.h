@@ -23,20 +23,20 @@
 
 /* ---- 到达阈值 ---- */
 #define CHASSIS_POS_TOL_MM        2.0f    /* 位置到达阈值(mm)   */
-#define CHASSIS_ANG_TOL_DEG       1.0f    /* 角度到达阈值(deg)  */
+#define CHASSIS_ANG_TOL_DEG       3.0f    /* 角度到达阈值(deg)  */
 
 /* ---- 默认梯形曲线参数(平移, 量纲 mm) —— 对齐 project 3 参数模型 ----
  * MAX_SPEED: 匀速段最大速度
  * MAX_ACCEL: 加/减速度(恒定值)
  * MIN_SPEED: 启动起步速度, 跳过低速死区(对应 project 的 MinStartSpeed) */
-#define CHASSIS_TRANS_MAX_SPEED   400.0f    /* mm/s   */
-#define CHASSIS_TRANS_MAX_ACCEL   200.0f    /* mm/s^2 */
-#define CHASSIS_TRANS_MIN_SPEED   0.0f     /* mm/s   (启动起步速度, 跳过电机死区≈0.94) */
+#define CHASSIS_TRANS_MAX_SPEED   200.0f    /* mm/s   */
+#define CHASSIS_TRANS_MAX_ACCEL   100.0f    /* mm/s^2 */
+#define CHASSIS_TRANS_MIN_SPEED   25.0f     /* mm/s   (启动起步速度, 跳过电机死区≈0.94) */
 
 /* ---- 默认梯形曲线参数(旋转, 量纲 deg) —— 对齐 project 3 参数模型 ---- */
-#define CHASSIS_ROT_MAX_SPEED     180.0f    /* deg/s   */
-#define CHASSIS_ROT_MAX_ACCEL     200.0f    /* deg/s^2 (旋转惯量大需更缓) */
-#define CHASSIS_ROT_MIN_SPEED     12.0f     /* deg/s   (旋转启动起步速度) */
+#define CHASSIS_ROT_MAX_SPEED     90.0f    /* deg/s   */
+#define CHASSIS_ROT_MAX_ACCEL     45.0f    /* deg/s^2 (旋转惯量大需更缓) */
+#define CHASSIS_ROT_MIN_SPEED     5.0f     /* deg/s   (旋转启动起步速度) */
 
 /* ---- 控制周期 ---- */
 #define CHASSIS_TICK_DT_S         0.001f    /* chassis_tick 步长 1ms */
