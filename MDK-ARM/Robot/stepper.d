@@ -37,3 +37,12 @@ robot\stepper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 robot\stepper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 robot\stepper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 robot\stepper.o: ../Core/Inc/gpio.h
+robot\stepper.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+robot\stepper.o: ../Core/Inc/FreeRTOSConfig.h
+robot\stepper.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+robot\stepper.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+robot\stepper.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+robot\stepper.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+robot\stepper.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+robot\stepper.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+robot\stepper.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

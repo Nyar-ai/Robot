@@ -13,6 +13,8 @@
 #include "tim.h"
 #include "gpio.h"
 #include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 /* ---- 每个电机的硬件绑定 ---- */
 typedef struct {
@@ -54,7 +56,9 @@ static void Stepper_StopPWM(const Stepper_Bind *b)
 {
     HAL_TIM_PWM_Stop(b->htim, b->channel);
     if (b->is_advanced) {
+        taskENTER_CRITICAL();
         __HAL_TIM_MOE_DISABLE(b->htim);
+        taskEXIT_CRITICAL();
     }
 }
 
@@ -80,11 +84,12 @@ void Stepper_Init(void)
     {
         TIM_HandleTypeDef *h = s_bind[i].htim;
         /* 使能 ARR 预装载 */
+        taskENTER_CRITICAL();
         __HAL_TIM_ENABLE_OCxPRELOAD(h, s_bind[i].channel);
         /* 初始 ARR: 1MHz/1000 = 1000 步/秒 (只是个安全初值, 之后会被 SetSpeed 覆盖) */
         __HAL_TIM_SET_AUTORELOAD(h, 1000 - 1);
         __HAL_TIM_SET_COMPARE(h, s_bind[i].channel, 500);
-
+        taskEXIT_CRITICAL();
         /* DIR 默认置 RESET(方向由用户定义, 这里只给个确定态) */
         HAL_GPIO_WritePin(s_bind[i].dir_port, s_bind[i].dir_pin, GPIO_PIN_RESET);
 
@@ -115,7 +120,9 @@ void Stepper_SetSpeed(uint8_t id, float step_s)
      * 因 CCR 预装载已开启(见 Init), 写入的 0 会在当前脉冲周期结束
      * (CNT 归零的更新事件)时才生效 → 最后一个高电平完整输出后再停止. */
     if (v < STEPPER_MIN_STEP_S) {
+        taskENTER_CRITICAL();
         __HAL_TIM_SET_COMPARE(b->htim, b->channel, 0);
+        taskEXIT_CRITICAL();
         return;
     }
 
@@ -132,10 +139,10 @@ void Stepper_SetSpeed(uint8_t id, float step_s)
     uint32_t arr = (uint32_t)((float)STEPPER_TIMER_FREQ_HZ / v);
     if (arr < 2) arr = 2;                 /* ARR 至少 2, 保证有完整脉冲 */
     if (arr > 65535) arr = 65535;         /* 16 位定时器保护 */
-
+    taskENTER_CRITICAL();
     __HAL_TIM_SET_AUTORELOAD(b->htim, arr - 1);
     __HAL_TIM_SET_COMPARE(b->htim, b->channel, arr / 2);
-
+    taskEXIT_CRITICAL(); 
     Stepper_StartPWM(b);
 }
 
