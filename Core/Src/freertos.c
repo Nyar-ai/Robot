@@ -156,8 +156,8 @@ void StartDefaultTask(void *argument)
    */
   (void)argument;
 
-  enum { DS_MOVE1, DS_TURN, DS_MOVE2, DS_DONE };
-  uint8_t demo_state = DS_TURN;
+  enum { DS_MOVE1, DS_MOVE2, DS_MOVE3, DS_MOVE4, DS_MOVE5, DS_DONE, DS_TURN1, DS_TURN2, DS_TURN3, DS_TURN4, DS_TURN5};
+  uint8_t demo_state = DS_MOVE1;
   uint8_t log_div = 0;
   uint8_t settle = 0;  /* 到达后短暂停留计数 */
 
@@ -170,30 +170,77 @@ void StartDefaultTask(void *argument)
     {
     case DS_MOVE1:
       /* 平移到世界坐标 (1000, 0) mm */
-      done = move_to_coordinate(500.0f, 500.0f);
+      if (settle > 0) { settle--; break; }
+      done = move_to_coordinate(500.0f, 0.0f);
       if (done) {
-        chassis_uart_log("[1] reached (1000,0)\r\n");
+        chassis_uart_log("[1] reached (500.0f, 0.0f)\r\n");
         settle = 30;          /* 约 300ms 停顿, 便于观察 */
-        demo_state = DS_DONE;
+        demo_state = DS_TURN3;
       }
       break;
-    case DS_TURN:
-      if (settle > 0) { settle--; break; }
-      /* 转向到绝对角度 90 度 (有陀螺仪则用陀螺仪, 否则里程计积分) */
-      done = headturn(90);
+    case DS_TURN3:
+      /* 平移到世界坐标 (1000, 0) mm */
+      done = headturn(0);
       if (done) {
-        chassis_uart_log("[2] reached head=90\r\n");
-        settle = 30;
-        demo_state = DS_DONE;
+        chassis_uart_log("[3] headturn(0)\r\n");
+        settle = 30;          /* 约 300ms 停顿, 便于观察 */
+        demo_state = DS_MOVE2;
       }
       break;
     case DS_MOVE2:
       if (settle > 0) { settle--; break; }
+      /* 转向到绝对角度 90 度 (有陀螺仪则用陀螺仪, 否则里程计积分) */
+      //done = headturn(90);
+      done = move_to_coordinate(0.0f, 500.0f);
+      if (done) {
+        chassis_uart_log("[2] reached (500.0f, 500.0f), demo done\r\n");
+        settle = 30;
+        demo_state = DS_TURN1;
+      }
+      break;
+    case DS_TURN1:
+      /* 平移到世界坐标 (1000, 0) mm */
+      done = headturn(0);
+      if (done) {
+        chassis_uart_log("[1] headturn(90)\r\n");
+        settle = 30;          /* 约 300ms 停顿, 便于观察 */
+        demo_state = DS_MOVE3;
+      }
+      break;
+    case DS_MOVE3:
+      if (settle > 0) { settle--; break; }
       /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
       done = move_to_coordinate(500.0f, 500.0f);
       if (done) {
-        chassis_uart_log("[3] reached (1000,500), demo done\r\n");
-        demo_state = DS_DONE;
+        chassis_uart_log("[3] reached (0.0f, 500.0f), demo done\r\n");
+        demo_state = DS_TURN2;
+      }
+      break;
+    case DS_TURN2:
+      if (settle > 0) { settle--; break; }
+      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
+      done = headturn(0);
+      if (done) {
+        chassis_uart_log("[2] headturn(0), demo done\r\n");
+        demo_state = DS_MOVE4;
+      }
+      break;
+    case DS_MOVE4:
+      if (settle > 0) { settle--; break; }
+      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
+      done = move_to_coordinate(0.0f, 0.0f);
+      if (done) {
+        chassis_uart_log("[4] reached (0.0f, 0.0f), demo done\r\n");
+        demo_state = DS_TURN4;
+      }
+      break;
+    case DS_TURN4:
+      if (settle > 0) { settle--; break; }
+      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
+      done = headturn(0);
+      if (done) {
+        chassis_uart_log("[4] headturn(0), demo done\r\n");
+        demo_state = DS_MOVE1;
       }
       break;
     case DS_DONE:

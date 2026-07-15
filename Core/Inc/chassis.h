@@ -22,9 +22,9 @@
 #include <stddef.h>   /* NULL (ARMCC 5 不自动引入) */
 
 /* ---- 到达阈值 ---- */
-#define CHASSIS_POS_TOL_MM        2.0f    /* 位置到达阈值(mm)   */
-#define CHASSIS_ANG_TOL_DEG       3.0f    /* 角度到达阈值(deg)  */
-
+#define CHASSIS_POS_TOL_MM        0.05f    /* 位置到达阈值(mm)   */
+#define CHASSIS_ANG_TOL_DEG       0.1f    /* 角度到达阈值(deg)  */
+         
 /* ---- 默认梯形曲线参数(平移, 量纲 mm) —— 对齐 project 3 参数模型 ----
  * MAX_SPEED: 匀速段最大速度
  * MAX_ACCEL: 加/减速度(恒定值)
@@ -35,7 +35,7 @@
 
 /* ---- 默认梯形曲线参数(旋转, 量纲 deg) —— 对齐 project 3 参数模型 ---- */
 #define CHASSIS_ROT_MAX_SPEED     90.0f    /* deg/s   */
-#define CHASSIS_ROT_MAX_ACCEL     45.0f    /* deg/s^2 (旋转惯量大需更缓) */
+#define CHASSIS_ROT_MAX_ACCEL     45.0f    /* deg/s	^2 (旋转惯量大需更缓) */
 #define CHASSIS_ROT_MIN_SPEED     5.0f     /* deg/s   (旋转启动起步速度) */
 
 /* ---- 控制周期 ---- */
