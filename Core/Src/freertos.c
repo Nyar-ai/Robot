@@ -191,7 +191,7 @@ void StartDefaultTask(void *argument)
       if (settle > 0) { settle--; break; }
       /* 转向到绝对角度 90 度 (有陀螺仪则用陀螺仪, 否则里程计积分) */
       //done = headturn(90);
-      done = move_to_coordinate(0.0f, 500.0f);
+      done = move_to_coordinate(500.0f, 500.0f);
       if (done) {
         chassis_uart_log("[2] reached (500.0f, 500.0f), demo done\r\n");
         settle = 30;
@@ -210,7 +210,7 @@ void StartDefaultTask(void *argument)
     case DS_MOVE3:
       if (settle > 0) { settle--; break; }
       /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
-      done = move_to_coordinate(500.0f, 500.0f);
+      done = move_to_coordinate(0.0f, 500.0f);
       if (done) {
         chassis_uart_log("[3] reached (0.0f, 500.0f), demo done\r\n");
         demo_state = DS_TURN2;

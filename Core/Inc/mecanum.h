@@ -30,9 +30,9 @@
 #define MECANUM_NUM  4
 
 /* ---- 车体几何参数(按你的实车修改) ---- */
-#define MECANUM_WHEEL_RADIUS_MM   30.0f    /* 轮半径(电机层换算步/秒时用) */
+#define MECANUM_WHEEL_RADIUS_MM   37.5f    /* 轮半径(电机层换算步/秒时用) */
 #define MECANUM_LX_MM             61.0f   /* 半轴距(中心到前后轮) */
-#define MECANUM_LY_MM             86.0f   /* 半轮距(中心到左右轮) */
+#define MECANUM_LY_MM             110.0f   /* 半轮距(中心到左右轮) */
 
 /* 若实测左右平移方向反了, 改为 -1.0f */
 #define MECANUM_FLIP_Y            -1.0f
