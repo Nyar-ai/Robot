@@ -15,11 +15,29 @@
  *                                        Mecanum_Inverse → 4 轮速
  *
  * 角度来源: chassis_feed_gyro 注入则用陀螺仪, 否则用 ω 积分 θ
+ *
+ * 平移航向修正(对齐 1064tiaozheng Omega_attitude_solution):
+ *   平移模式下, 对 (target_heading - current_heading) 做位置式 PID,
+ *   输出 ω 叠加到麦轮逆解, 在平移过程中持续纠偏.
  */
 #include "chassis.h"
 #include "scurve.h"
 #include "mecanum.h"
 #include <math.h>
+
+/* ---- 偏航 PID 状态 ------------------------------------------------------ */
+typedef struct {
+    float kp, ki, kd;
+    float imax;         /* 输出限幅 (deg/s) */
+    float integral;     /* 积分累加 */
+    float prev_error;   /* error[n-1] */
+} YawPID_t;
+
+static YawPID_t g_yaw_pid = {
+    CHASSIS_YAW_KP, CHASSIS_YAW_KI, CHASSIS_YAW_KD,
+    CHASSIS_YAW_IMAX,
+    0.0f, 0.0f
+};
 
 /* ---- 内部状态 ----------------------------------------------------------- */
 typedef enum {
@@ -41,6 +59,9 @@ typedef struct {
     /* 运动模式 */
     Chassis_Mode mode;
     bool arrived;          /* 当前运动是否已完成 */
+
+    /* 航向锁定 (平移时自动保持) */
+    float target_heading_deg;  /* deg, 平移时要保持的绝对角度 */
 
     /* 平移规划 */
     Scurve_Planner trans_planner;
@@ -79,6 +100,35 @@ static float normalize_angle_deg(float a)
 
 static float fabsf_local(float v) { return v < 0.0f ? -v : v; }
 
+/* ---- 偏航 PID (位置式) ---- */
+static float yaw_pid_compute(float error)
+{
+    YawPID_t *p = &g_yaw_pid;
+
+    /* 积分限幅 + 抗饱和 */
+    p->integral += error;
+    if (p->integral >  p->imax) p->integral =  p->imax;
+    if (p->integral < -p->imax) p->integral = -p->imax;
+
+    float output = p->kp * error
+                 + p->ki * p->integral
+                 + p->kd * (error - p->prev_error);
+
+    p->prev_error = error;
+
+    /* 输出限幅 */
+    if (output >  p->imax) output =  p->imax;
+    if (output < -p->imax) output = -p->imax;
+
+    return output;
+}
+
+static void yaw_pid_reset(void)
+{
+    g_yaw_pid.integral   = 0.0f;
+    g_yaw_pid.prev_error = 0.0f;
+}
+
 /* ---- 对外接口 ----------------------------------------------------------- */
 
 void chassis_init(void)
@@ -106,6 +156,8 @@ void chassis_init(void)
     g_chassis.mode = CH_MODE_IDLE;
     g_chassis.arrived = true;
 
+    g_chassis.target_heading_deg = 0.0f;
+
     g_chassis.trans_phi_rad = 0.0f;
     g_chassis.move_tx = 0.0f;
     g_chassis.move_ty = 0.0f;
@@ -114,6 +166,9 @@ void chassis_init(void)
     g_chassis.turn_target_deg = 0.0f;
 
     for (int i = 0; i < MECANUM_NUM; ++i) g_chassis.wheel_speed[i] = 0.0f;
+
+    /* 重置偏航 PID 状态 */
+    yaw_pid_reset();
 }
 
 void chassis_feed_gyro(float gyro_deg)
@@ -127,6 +182,20 @@ void chassis_feed_gyro(float gyro_deg)
 void chassis_clear_gyro(void)
 {
     g_chassis.gyro_used = false;
+}
+
+void chassis_set_target_heading(float heading_deg)
+{
+    g_chassis.target_heading_deg = normalize_angle_deg(heading_deg);
+    yaw_pid_reset();  /* 切换目标时清 PID 历史 */
+}
+
+void chassis_set_yaw_pid(float kp, float ki, float kd, float imax)
+{
+    if (kp  > 0.0f) g_yaw_pid.kp   = kp;
+    if (ki  > 0.0f) g_yaw_pid.ki   = ki;
+    if (kd  > 0.0f) g_yaw_pid.kd   = kd;
+    if (imax> 0.0f) g_yaw_pid.imax = imax;
 }
 
 void chassis_set_pose(float x, float y, float theta_deg)
@@ -156,6 +225,7 @@ void chassis_stop(void)
     g_chassis.mode = CH_MODE_IDLE;
     g_chassis.arrived = true;
     for (int i = 0; i < MECANUM_NUM; ++i) g_chassis.wheel_speed[i] = 0.0f;
+    yaw_pid_reset();
 }
 
 void chassis_get_wheel_speed(float w[4])
@@ -190,6 +260,10 @@ bool move_to_coordinate(float tx, float ty)
         g_chassis.move_ty = ty;
         g_chassis.trans_phi_rad = atan2f(eby, ebx); /* 车体系方位角 */
 
+        /* 锁定当前航向作为平移保持目标 */
+        g_chassis.target_heading_deg = chassis_theta_deg();
+        yaw_pid_reset();   /* 清 PID 历史 */
+
         if (d < CHASSIS_POS_TOL_MM) {
             /* 已在目标范围内 */
             g_chassis.mode = CH_MODE_IDLE;
@@ -222,6 +296,8 @@ bool headturn(int16_t angle)
         g_chassis.turn_target_deg = target;
         g_chassis.rot_dir = (dtheta >= 0.0f) ? 1.0f : -1.0f;
 
+        yaw_pid_reset();   /* 清 PID 历史 */
+
         if (fabsf_local(dtheta) < CHASSIS_ANG_TOL_DEG) {
             g_chassis.mode = CH_MODE_IDLE;
             g_chassis.arrived = true;
@@ -247,7 +323,16 @@ void chassis_tick(void)
         float v = Scurve_Update(&g_chassis.trans_planner, dt);
         vx_b = v * cosf(g_chassis.trans_phi_rad);
         vy_b = v * sinf(g_chassis.trans_phi_rad);
-        omega = 0.0f; /* 纯平移, 转向交给陀螺仪/后续融合 */
+
+        /* ---- 航向锁定: 陀螺仪偏航 PID 闭环修正 (对齐 1064tiaozheng) ----
+         * 在平移过程中, 对 (target_heading - current_heading) 做位置式 PID,
+         * 输出 ω 叠加到麦轮逆解, 持续纠正车轮打滑/地面不平导致的偏航漂移.
+         * 有陀螺仪时用 gyro_theta, 否则用里程计 theta. */
+        {
+            float heading_err = normalize_angle_deg(
+                g_chassis.target_heading_deg - chassis_theta_deg());
+            omega = deg2rad(yaw_pid_compute(heading_err));
+        }
 
         /* 到达判定: 规划器空闲 且 实际位置误差足够小 */
         if (Scurve_IsIdle(&g_chassis.trans_planner)) {
@@ -258,6 +343,8 @@ void chassis_tick(void)
                 g_chassis.mode = CH_MODE_IDLE;
                 g_chassis.arrived = true;
                 vx_b = vy_b = 0.0f;
+                omega = 0.0f;
+                yaw_pid_reset();
             } else {
                 /* 规划器已停但没到(积分漂移), 重新规划剩余距离 */
                 float theta_rad = deg2rad(chassis_theta_deg());
@@ -282,6 +369,7 @@ void chassis_tick(void)
                 g_chassis.mode = CH_MODE_IDLE;
                 g_chassis.arrived = true;
                 omega = 0.0f;
+                yaw_pid_reset();
             } else {
                 /* 没转到位, 重新规划剩余角度 */
                 float dtheta = normalize_angle_deg(g_chassis.turn_target_deg - chassis_theta_deg());

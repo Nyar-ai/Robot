@@ -7,6 +7,7 @@
  *   - 内部用两个 Scurve_Planner: 一个管平移位移(单位 mm), 一个管旋转角度(单位 deg)
  *   - 世界固定坐标系: (x 向前, y 向左), 目标点/角度都是世界系绝对量
  *   - 角度由"陀螺仪注入"提供; 没注入则退化用里程计积分 θ
+ *   - 平移过程自动锁定航向(陀螺仪偏航 PID 闭环修正), 对齐 1064tiaozheng
  *
  * 典型用法(非阻塞):
  *   move_to_coordinate(1000, 500);             // 发起
@@ -23,7 +24,7 @@
 
 /* ---- 到达阈值 ---- */
 #define CHASSIS_POS_TOL_MM        0.05f    /* 位置到达阈值(mm)   */
-#define CHASSIS_ANG_TOL_DEG       0.1f    /* 角度到达阈值(deg)  */
+#define CHASSIS_ANG_TOL_DEG       0.05f    /* 角度到达阈值(deg)  */
          
 /* ---- 默认梯形曲线参数(平移, 量纲 mm) —— 对齐 project 3 参数模型 ----
  * MAX_SPEED: 匀速段最大速度
@@ -35,11 +36,18 @@
 
 /* ---- 默认梯形曲线参数(旋转, 量纲 deg) —— 对齐 project 3 参数模型 ---- */
 #define CHASSIS_ROT_MAX_SPEED     90.0f    /* deg/s   */
-#define CHASSIS_ROT_MAX_ACCEL     45.0f    /* deg/s	^2 (旋转惯量大需更缓) */
+#define CHASSIS_ROT_MAX_ACCEL     45.0f    /* deg/s^2 (旋转惯量大需更缓) */
 #define CHASSIS_ROT_MIN_SPEED     5.0f     /* deg/s   (旋转启动起步速度) */
 
 /* ---- 控制周期 ---- */
 #define CHASSIS_TICK_DT_S         0.001f    /* chassis_tick 步长 1ms */
+
+// ---- 偏航角修正 PID 参数 (平移过程中锁定航向用) ----
+
+#define CHASSIS_YAW_KP            3.0f
+#define CHASSIS_YAW_KI            0.0f
+#define CHASSIS_YAW_KD            0.0003f
+#define CHASSIS_YAW_IMAX          65.0f     /* 输出限幅 deg/s, 对齐1064的 vw≤65 */
 
 /**
  * @brief 初始化底盘层(清零位姿, 配置 S 曲线参数, 进入 IDLE)
@@ -102,5 +110,18 @@ void chassis_stop(void);
  * @brief 当前是否处于空闲(非运动)状态
  */
 bool chassis_is_idle(void);
+
+/**
+ * @brief 设定平移过程中锁定的目标航向角 (世界系绝对角度, deg)
+ * @param heading_deg 目标航向 (传入后内部归一化)
+ * @note  若平移开始时未调用, 内部自动锁定当前航向作为目标
+ */
+void chassis_set_target_heading(float heading_deg);
+
+/**
+ * @brief 设置偏航修正 PID 参数 (运行时调参用, 填 0 表示不改动)
+ * @param kp/ki/kd/imax 对应 PID 参数和输出限幅, 0 表示保持原值
+ */
+void chassis_set_yaw_pid(float kp, float ki, float kd, float imax);
 
 #endif /* __CHASSIS_H */
