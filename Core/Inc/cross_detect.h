@@ -38,8 +38,8 @@
 
 /* 像素→物理毫米换算系数 (标定后修改)
  * 公式: k = 2 × H × tan(α/2) / 800
- *       H = 摄像头离地高度 (mm), α = 水平视场角 */
-#define CROSS_PX_TO_MM            0.5f
+ *       H = 摄像头离地吧高度 (mm), α = 水平视场角 */
+#define CROSS_PX_TO_MM            0.12875f
 
 /* 等待 K230 响应超时 (ms) */
 #define CROSS_DETECT_TIMEOUT_MS   500

@@ -1,10 +1,10 @@
-# cross_detect_uart.py
+# position_test_continuous.py
 # K230 立创庐山派 / Lite K230D
 # 纯二值化 + 投影法 识别黑色十字中心
 # 算法: 全局二值化 → 水平/垂直投影 → 峰值定位 → 十字交叉点
 #
-# 协议模式: 请求-响应
-#   收到 "DETECT\r\n" → 连拍 N 帧 → 中值滤波 → 回复 "CROSS,dx,dy,conf\r\n" 或 "NOCROSS\r\n"
+# 持续检测模式: 每帧直接检测 + draw_overlay 显示
+# 反光处理: 投影间隙填充, 消除黑线上反光白点导致的投影断裂
 
 import time, os, sys
 from media.sensor import *
@@ -163,6 +163,7 @@ def fill_projection_gaps(proj, max_gap, threshold_ratio=0.3):
 
                 if gap_end < n and gap_len <= max_gap:
                     # 短间隙: 用两侧有效区域的最小值填充
+                    # 取间隙左侧有效区域的最后一个值 和 右侧有效区域的第一个值 中较小的那个
                     left_val = result[region_end - 1]
                     right_val = result[gap_end]
                     fill_val = left_val if left_val < right_val else right_val
@@ -371,7 +372,7 @@ def draw_overlay(img, cx, cy, fps, dx, dy):
 
     # 底部状态栏
     img.draw_string_advanced(10, CAM_HEIGHT - 22, 14,
-                              "WAIT DETECT..." , color=(200, 200, 200))
+                              "CONTINUOUS DETECT", color=(200, 200, 200))
 
 
 # ==================== 主程序 ====================
@@ -381,7 +382,8 @@ def main():
 
     print("=" * 50)
     print("  K230 二值化 + 投影法 黑色十字识别")
-    print("  请求-响应模式: 收 DETECT → 检测 → 回复 CROSS/NOCROSS")
+    print("  持续检测模式: 每帧直接检测 + draw_overlay")
+    print("  反光处理: 投影间隙填充 max_gap=%d" % PROJ_GAP_FILL)
     print("  立创庐山派 / Lite K230D")
     print("=" * 50)
 
@@ -396,40 +398,37 @@ def main():
     sensor.run()
     fps_start = time.ticks_ms()
 
-    print("[MAIN] 开始主循环, 等待 DETECT 请求...")
-    print("[MAIN] 参数: 阈值<%d, 步进=%d, 检测帧数=%d" %
-          (BLACK_THRESH, SAMPLE_STEP, DETECT_FRAMES))
+    print("[MAIN] 持续检测模式, 每帧执行二值化+投影+overlay...")
+    print("[MAIN] 参数: 阈值<%d, 步进=%d, 间隙填充=%d" %
+          (BLACK_THRESH, SAMPLE_STEP, PROJ_GAP_FILL))
     print("[MAIN] 画面中心: (%d, %d), 偏移=检测点-中心" % (CENTER_X, CENTER_Y))
 
     try:
         while True:
             os.exitpoint()
 
-            # 1. 获取一帧用于预览
+            # 1. 获取一帧
             img = sensor.snapshot()
 
             # 2. FPS
             fps = update_fps()
 
-            # 3. 轻量预览: 只画十字准星, 不做投影检测 (省 CPU)
-            draw_preview(img, fps)
+            # 3. 每帧直接执行二值化 + 投影 + 峰值检测
+            h_proj, v_proj = binarize_and_project(img)
+            cx, cy = find_peak_center(h_proj, v_proj)
 
-            # 4. 显示
+            # 4. 计算偏移
+            if cx >= 0 and cy >= 0:
+                dx = cx - CENTER_X   # >0 十字在中心右侧
+                dy = cy - CENTER_Y   # >0 十字在中心下方(车头方向)
+            else:
+                dx, dy = 0, 0
+
+            # 5. 绘制检测结果 overlay
+            draw_overlay(img, cx, cy, fps, dx, dy)
+
+            # 6. 显示
             Display.show_image(img)
-
-            # 5. 检查 UART 是否有 "DETECT" 请求
-            line = uart_readline(uart)
-            if line is not None:
-                print("[RX] '%s'" % line)
-                if line == "DETECT":
-                    # 收到请求, 执行完整检测并回复
-                    do_detect_and_reply(img, uart)
-                elif line == "OK":
-                    print("[MAIN] STM32 确认纠偏完成")
-                elif line == "RETRY":
-                    print("[MAIN] STM32 要求重试")
-                else:
-                    print("[MAIN] 未知指令: '%s'" % line)
 
     except KeyboardInterrupt:
         print("\n[MAIN] 用户中断")
