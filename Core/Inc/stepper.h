@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "mecanum.h"
 
 /* 电机编号(与 mecanum.h 的 LF/RF/LB/RB 对应, 但此处仅作 ID) */
 #define STEPPER_M1   0   /* PA6 / TIM3_CH1 / DIR PE13 */
@@ -39,7 +40,7 @@
 
 /* ---- 步进电机参数(按你的实车/驱动板拨码改) ---- */
 #define STEPPER_STEPS_PER_REV      3200.0f   /* 200步/圈 × 16细分 = 3200 步/圈 */
-#define STEPPER_WHEEL_RADIUS_MM    30.0f     /* 麦轮半径(必须与 mecanum.h 一致) */
+#define STEPPER_WHEEL_RADIUS_MM    MECANUM_WHEEL_RADIUS_MM     /* 麦轮半径(必须与 mecanum.h 一致) */
 /* 线速度→步速换算: step_s = mm_s / (2π·r) × steps_per_rev */
 
 /* ---- 定时器统一工作频率 ---- */

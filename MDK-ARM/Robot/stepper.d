@@ -3,6 +3,7 @@ robot\stepper.o: ../Core/Inc/stepper.h
 robot\stepper.o: D:\kail5\ARM\ARMCC\Bin\..\include\stdint.h
 robot\stepper.o: D:\kail5\ARM\ARMCC\Bin\..\include\stdbool.h
 robot\stepper.o: D:\kail5\ARM\ARMCC\Bin\..\include\stddef.h
+robot\stepper.o: ../Core/Inc/mecanum.h
 robot\stepper.o: ../Core/Inc/tim.h
 robot\stepper.o: ../Core/Inc/main.h
 robot\stepper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h

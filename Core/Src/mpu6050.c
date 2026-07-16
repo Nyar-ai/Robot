@@ -162,7 +162,7 @@ uint8_t MPU6050_Init(void)
     /* 先读 WHO_AM_I 验证芯片在线 */
     uint8_t id = 0;
     if (read_reg_blocking(MPU6050_WHO_AM_I, &id, 100) != HAL_OK) return 1;
-    if (id != 0x68) return 2;   /* MPU6050 应答 0x68(HAL 左移后比较位), 兼容旧判断 */
+    if (id != 0x68) return id;   /* MPU6050 应答 0x68(HAL 左移后比较位), 兼容旧判断 */
 
     /* 初始化序列: DLPF 开启降噪, 1kHz 采样匹配 1ms 任务 */
     if (write_reg_blocking(MPU6050_PWR_MGMT_1,   0x01, 100) != HAL_OK) return 3;  /* 取消睡眠, X陀螺时钟 */
