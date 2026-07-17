@@ -29,6 +29,7 @@
 #include "stepper.h"
 #include "mpu6050.h"
 #include "usart.h"
+#include "cross_detect.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -87,6 +88,9 @@ static void chassis_uart_log(const char *fmt, ...);
 
 /* I2C DMA 完成信号量(gyroTask 与 DMA 中断同步用) */
 static SemaphoreHandle_t g_i2c_dma_sem = NULL;
+
+/* USART2 十字检测信号量 (IDLE 中断唤醒 defaultTask) */
+static SemaphoreHandle_t g_uart2_rx_sem = NULL;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -102,6 +106,13 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   chassis_init();
   Stepper_Init();          /* 配置 4 个步进定时器(Prescaler/ARR/占空比), 不立即转 */
+  CrossDetect_Init();      /* 初始化十字检测纠偏模块 (USART2 需已初始化) */
+
+  /* 创建 USART2 DMA 接收完成信号量 (IDLE 中断 Give, Calibrate 中 Take) */
+  g_uart2_rx_sem = xSemaphoreCreateBinary();
+  if (g_uart2_rx_sem != NULL) {
+    CrossDetect_SetSemaphore(g_uart2_rx_sem);
+  }
   /* MPU6050 初始化放在 gyroTask 里(因为它需要 HAL_Delay, 不能在内核启动前调) */
   /* USER CODE END Init */
 
@@ -147,102 +158,135 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /*
-   * 指令层(状态机, 非阻塞): 世界坐标系下走一条路径.
+   * 指令层(状态机, 非阻塞): 世界坐标系下走正方形路径, 每到一个角做十字纠偏.
+   *
+   * 路径: (0,0) → (500,0) → 十字2纠偏 → turn(0) → (500,500) → 十字3纠偏
+   *       → turn(0) → (0,500) → 十字4纠偏 → turn(0) → (0,0) → 十字1纠偏 → 循环
+   *
    * 设计要点:
-   *   - move_to_coordinate / headturn 均为"发起-查询"语义, 反复调用同一目标
-   *     仅在目标变化时重新规划, 否则只查询 arrived 状态.
-   *   - 本任务为低优先级, 可做阻塞串口打印; 控制环在 chassisTask(1ms) 中独立运行.
-   *   - 10ms 节拍查询状态, 100ms 节拍打印一次 pose/轮速.
+   *   - move_to_coordinate / headturn 均为"发起-查询"语义
+   *   - 到达后等待 settle 让车完全静止, 再调 CrossDetect_Calibrate (阻塞)
+   *   - 控制环在 chassisTask(1ms) 中独立运行, 不受影响
    */
   (void)argument;
 
-  enum { DS_MOVE1, DS_MOVE2, DS_MOVE3, DS_MOVE4, DS_MOVE5, DS_DONE, DS_TURN1, DS_TURN2, DS_TURN3, DS_TURN4, DS_TURN5};
+  enum {
+    DS_MOVE1, DS_CROSS2, DS_TURN1,
+    DS_MOVE2, DS_CROSS3, DS_TURN2,
+    DS_MOVE3, DS_CROSS4, DS_TURN3,
+    DS_MOVE4, DS_CROSS1, DS_DONE
+  };
   uint8_t demo_state = DS_MOVE1;
   uint8_t log_div = 0;
   uint8_t settle = 0;  /* 到达后短暂停留计数 */
 
-  chassis_uart_log("\r\n[chassis demo] start (world frame)\r\n");
+  chassis_uart_log("\r\n[chassis] cross-calib demo start\r\n");
 
   for (;;)
   {
     bool done = false;
     switch (demo_state)
     {
+    /* ---- 第一段: (0,0) → (500,0) ---- */
     case DS_MOVE1:
-      /* 平移到世界坐标 (1000, 0) mm */
       if (settle > 0) { settle--; break; }
       done = move_to_coordinate(500.0f, 0.0f);
       if (done) {
-        chassis_uart_log("[1] reached (500.0f, 0.0f)\r\n");
-        settle = 30;          /* 约 300ms 停顿, 便于观察 */
-        demo_state = DS_TURN3;
+        chassis_uart_log("[M1] reached (500,0)\r\n");
+        settle = 50;          /* ~500ms 静止稳定 */
+        demo_state = DS_CROSS2;
       }
       break;
-    case DS_TURN3:
-      /* 平移到世界坐标 (1000, 0) mm */
-      done = headturn(0);
-      if (done) {
-        chassis_uart_log("[3] headturn(0)\r\n");
-        settle = 30;          /* 约 300ms 停顿, 便于观察 */
-        demo_state = DS_MOVE2;
-      }
-      break;
-    case DS_MOVE2:
+    case DS_CROSS2:
       if (settle > 0) { settle--; break; }
-      /* 转向到绝对角度 90 度 (有陀螺仪则用陀螺仪, 否则里程计积分) */
-      //done = headturn(90);
-      done = move_to_coordinate(500.0f, 500.0f);
-      if (done) {
-        chassis_uart_log("[2] reached (500.0f, 500.0f), demo done\r\n");
-        settle = 30;
+      {
+        bool ok = CrossDetect_Calibrate(2);
+        chassis_uart_log("[C2] calib %s\r\n", ok ? "OK" : "FAIL");
         demo_state = DS_TURN1;
       }
       break;
     case DS_TURN1:
-      /* 平移到世界坐标 (1000, 0) mm */
       done = headturn(0);
       if (done) {
-        chassis_uart_log("[1] headturn(90)\r\n");
-        settle = 30;          /* 约 300ms 停顿, 便于观察 */
-        demo_state = DS_MOVE3;
+        chassis_uart_log("[T1] headturn(0) done\r\n");
+        settle = 30;
+        demo_state = DS_MOVE2;
       }
       break;
-    case DS_MOVE3:
+
+    /* ---- 第二段: (500,0) → (500,500) ---- */
+    case DS_MOVE2:
       if (settle > 0) { settle--; break; }
-      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
-      done = move_to_coordinate(0.0f, 500.0f);
+      done = move_to_coordinate(500.0f, 500.0f);
       if (done) {
-        chassis_uart_log("[3] reached (0.0f, 500.0f), demo done\r\n");
+        chassis_uart_log("[M2] reached (500,500)\r\n");
+        settle = 50;
+        demo_state = DS_CROSS3;
+      }
+      break;
+    case DS_CROSS3:
+      if (settle > 0) { settle--; break; }
+      {
+        bool ok = CrossDetect_Calibrate(3);
+        chassis_uart_log("[C3] calib %s\r\n", ok ? "OK" : "FAIL");
         demo_state = DS_TURN2;
       }
       break;
     case DS_TURN2:
-      if (settle > 0) { settle--; break; }
-      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
       done = headturn(0);
       if (done) {
-        chassis_uart_log("[2] headturn(0), demo done\r\n");
+        chassis_uart_log("[T2] headturn(0) done\r\n");
+        settle = 30;
+        demo_state = DS_MOVE3;
+      }
+      break;
+
+    /* ---- 第三段: (500,500) → (0,500) ---- */
+    case DS_MOVE3:
+      if (settle > 0) { settle--; break; }
+      done = move_to_coordinate(0.0f, 500.0f);
+      if (done) {
+        chassis_uart_log("[M3] reached (0,500)\r\n");
+        settle = 50;
+        demo_state = DS_CROSS4;
+      }
+      break;
+    case DS_CROSS4:
+      if (settle > 0) { settle--; break; }
+      {
+        bool ok = CrossDetect_Calibrate(4);
+        chassis_uart_log("[C4] calib %s\r\n", ok ? "OK" : "FAIL");
+        demo_state = DS_TURN3;
+      }
+      break;
+    case DS_TURN3:
+      done = headturn(0);
+      if (done) {
+        chassis_uart_log("[T3] headturn(0) done\r\n");
+        settle = 30;
         demo_state = DS_MOVE4;
       }
       break;
+
+    /* ---- 第四段: (0,500) → (0,0) ---- */
     case DS_MOVE4:
       if (settle > 0) { settle--; break; }
-      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
       done = move_to_coordinate(0.0f, 0.0f);
       if (done) {
-        chassis_uart_log("[4] reached (0.0f, 0.0f), demo done\r\n");
-        demo_state = DS_TURN4;
+        chassis_uart_log("[M4] reached (0,0)\r\n");
+        settle = 50;
+        demo_state = DS_CROSS1;
       }
       break;
-    case DS_TURN4:
+    case DS_CROSS1:
       if (settle > 0) { settle--; break; }
-      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
-      done = headturn(0);
-      if (done) {
-        chassis_uart_log("[4] headturn(0), demo done\r\n");
-        demo_state = DS_MOVE1;
+      {
+        bool ok = CrossDetect_Calibrate(1);
+        chassis_uart_log("[C1] calib %s\r\n", ok ? "OK" : "FAIL");
+        demo_state = DS_MOVE1;   /* 回到起点, 循环 */
       }
       break;
+
     case DS_DONE:
     default:
       break;

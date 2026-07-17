@@ -525,6 +525,11 @@
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32f4xx_hal_timebase_tim.c</FilePath>
             </File>
+            <File>
+              <FileName>cross_detect.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\cross_detect.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

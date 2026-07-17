@@ -50,9 +50,10 @@ robot\freertos.o: ../Core/Inc/stepper.h
 robot\freertos.o: ../Core/Inc/mecanum.h
 robot\freertos.o: ../Core/Inc/mpu6050.h
 robot\freertos.o: ../Core/Inc/usart.h
+robot\freertos.o: ../Core/Inc/cross_detect.h
+robot\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
+robot\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 robot\freertos.o: D:\kail5\ARM\ARMCC\Bin\..\include\stdio.h
 robot\freertos.o: D:\kail5\ARM\ARMCC\Bin\..\include\stdarg.h
 robot\freertos.o: D:\kail5\ARM\ARMCC\Bin\..\include\string.h
 robot\freertos.o: D:\kail5\ARM\ARMCC\Bin\..\include\math.h
-robot\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
-robot\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h

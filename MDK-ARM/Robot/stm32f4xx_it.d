@@ -34,3 +34,16 @@ robot\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 robot\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 robot\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 robot\stm32f4xx_it.o: ../Core/Inc/stm32f4xx_it.h
+robot\stm32f4xx_it.o: ../Core/Inc/cross_detect.h
+robot\stm32f4xx_it.o: D:\kail5\ARM\ARMCC\Bin\..\include\stdbool.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+robot\stm32f4xx_it.o: ../Core/Inc/FreeRTOSConfig.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+robot\stm32f4xx_it.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
