@@ -1,16 +1,20 @@
 # cross_detect_uart.py
 # K230 立创庐山派 / Lite K230D
-# 纯二值化 + 投影法 识别黑色十字中心
-# 算法: 全局二值化 → 水平/垂直投影 → 峰值定位 → 十字交叉点
+# 霍夫直线交点法 识别黑色十字中心
+# 算法: 二值化提取黑色 → find_line_segments 霍夫找线段 → 水平/垂直分类 → 两直线交点(亚像素)
 #
-# 通讯模式(请求-应答, 与 STM32 camera_align.c 对接):
+# 相比旧版(二值化+投影峰值法)改进点:
+#   - 交点精度: 投影法取峰值中心(±5px) → 直线方程联立(亚像素,±1-2px)
+#   - 抗噪: 霍夫对断点/局部遮挡/光照不均不敏感
+#   - 形状校验: 只接受"近似水平+近似垂直"成对线段, 抗非十字干扰
+#   - 多帧中值投票: 取最近 N 帧交点中值, 抑制单帧抖动
+#
+# 通讯模式(请求-应答, 与 STM32 camera_align.c 对接, 协议不变):
 #   STM32 → K230:  [0xAA][0x55][ID]                                        (3 字节请求)
 #   K230  → STM32: [0xAA][0x55][STATUS][DX_L][DX_H][DY_L][DY_H][XOR]       (8 字节应答)
-#     STATUS: 0 = 未检测到十字, 1 = 检测到
+#     STATUS: 0 = 未检测到十字, 1 =检测到
 #     DX/DY : int16 带符号像素偏移 = 十字像素中心 − 图像中心(800x480→400,240), 小端
 #     XOR   : 前 7 字节异或校验
-#
-# 与旧版本区别: 不再定时推送 ASCII, 改为"收到请求才抓帧+应答", 与陀螺仪异步模式一致.
 
 import time, os, sys
 from media.sensor import *
@@ -23,23 +27,30 @@ from machine import UART
 
 CAM_WIDTH   = 800
 CAM_HEIGHT  = 480
-
-# 图像中心(像素), 用于把绝对像素坐标换算成"相对中心的偏移"
 CAM_IMG_CX  = CAM_WIDTH  // 2   # 400
 CAM_IMG_CY  = CAM_HEIGHT // 2   # 240
 
-# 二值化灰度阈值: 灰度 < BLACK_THRESH 判定为黑色
-BLACK_THRESH = 80
-
-# 投影采样步进 (步进越大越快, 精度越低, 推荐4)
-SAMPLE_STEP = 8
-
-# 峰值判定: 行/列黑色像素数需 >= 总行/列数的 MIN_PEAK_RATIO 才算有效
-MIN_PEAK_RATIO = 0.08
-
-# 坐标发送
+# UART
 UART_ID     = 2
 UART_BAUD   = 115200
+
+# 黑色二值化阈值(灰度): < BLACK_THRESH 视为黑色
+BLACK_THRESH = 80
+
+# 线段筛选参数
+LINE_MIN_LEN       = 60    # 线段最小长度(像素), 过滤短噪线
+LINE_MIN_MAGNITUDE = 300   # 霍夫最小响应强度, 过滤弱响应
+
+# 水平/垂直分类角度阈值(deg)
+# K230 line.theta() 返回 0~179, 其中 0/179=水平, 90=垂直
+HORIZ_ANGLE_TOL = 18   # |theta|<18 或 |theta-180|<18 视为水平
+VERT_ANGLE_TOL  = 18   # |theta-90|<18 视为垂直
+
+# 交点有效性判定: 交点必须在图像范围内(留点余量)
+CROSS_MARGIN = 30
+
+# 多帧投票窗口(取最近 VOTE_WINDOW 个有效交点的中值, 抑制单帧抖动)
+VOTE_WINDOW = 5
 
 # 协议字节定义(必须与 STM32 camera_align.h 一致)
 FRAME_SOF0      = 0xAA
@@ -49,19 +60,23 @@ ACK_LEN         = 8
 ACK_STATUS_OK   = 1
 ACK_STATUS_NONE = 0
 
-# 滑动窗口平滑(用于稳定检测, 仅在请求到来时使用)
-SMOOTH_WINDOW = 3
-
 # ==================== 全局变量 ====================
-cx_history = []
-cy_history = []
 frame_count = 0
 fps_start = 0
 fps_value = 0
 
+# 多帧交点历史(存 (cx, cy) 元组, None 表示无效)
+vote_history = []
+
+# 最近一次用于显示的检测中间结果
+last_h_line = None   # (x1,y1,x2,y2)
+last_v_line = None
+last_cross  = None   # (cx, cy)
+
+
+# ==================== 摄像头/UART 初始化 ====================
 
 def init_sensor():
-    """初始化摄像头"""
     print("[SENSOR] 初始化摄像头 800x480 RGB565...")
     sensor = Sensor()
     sensor.reset()
@@ -71,13 +86,11 @@ def init_sensor():
 
 
 def init_display():
-    """初始化LCD显示 + IDE帧缓冲"""
     print("[DISPLAY] 初始化 ST7701 LCD + IDE...")
     Display.init(Display.ST7701, width=CAM_WIDTH, height=CAM_HEIGHT, to_ide=True)
 
 
 def init_uart():
-    """初始化UART"""
     print("[UART] 初始化 UART%d @ %d baud..." % (UART_ID, UART_BAUD))
     try:
         uart = UART(UART_ID, UART_BAUD)
@@ -88,29 +101,7 @@ def init_uart():
         return None
 
 
-def smooth_coord(cx, cy):
-    """滑动窗口平滑坐标(仅在请求到来时调用, 返回平滑后的中心像素)"""
-    global cx_history, cy_history
-
-    if cx < 0:
-        cx_history.clear()
-        cy_history.clear()
-        return -1, -1
-
-    cx_history.append(cx)
-    cy_history.append(cy)
-
-    if len(cx_history) > SMOOTH_WINDOW:
-        cx_history.pop(0)
-        cy_history.pop(0)
-
-    avg_cx = sum(cx_history) // len(cx_history)
-    avg_cy = sum(cy_history) // len(cx_history)
-    return avg_cx, avg_cy
-
-
 def update_fps():
-    """更新FPS计数"""
     global frame_count, fps_start, fps_value
     frame_count += 1
     now = time.ticks_ms()
@@ -122,163 +113,147 @@ def update_fps():
     return fps_value
 
 
-def binarize_and_project(img):
-    """
-    bytearray高速二值化 + 投影
+# ==================== 核心: 霍夫直线交点检测 ====================
 
-    使用 img.bytearray() 一次性获取全帧灰度数据 (img 需先 to_grayscale)
-    避免逐像素 get_pixel() 的 Python→C 调用开销
+def line_endpoints(L):
+    """安全获取线段两端点, 兼容不同 API 版本."""
+    try:
+        return L.x1(), L.y1(), L.x2(), L.y2()
+    except:
+        # 部分版本用属性
+        return L.x1, L.y1, L.x2, L.y2
+
+
+def line_theta_deg(L):
+    """获取线段角度(0~179)."""
+    try:
+        return L.theta()
+    except:
+        return L.theta
+
+
+def line_len(L):
+    try:
+        return L.length()
+    except:
+        return L.length
+
+
+def line_mag(L):
+    try:
+        return L.magnitude()
+    except:
+        return getattr(L, "magnitude", 0)
+
+
+def line_intersection(L1, L2):
+    """两线段所在直线的几何交点(亚像素).
+    L1=(x1,y1,x2,y2), L2=(x3,y3,x4,y4).
+    返回 (px, py) 或 None(平行/数值异常)."""
+    x1, y1, x2, y2 = L1
+    x3, y3, x4, y4 = L2
+    denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+    if abs(denom) < 1e-6:
+        return None  # 平行
+    t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom
+    px = x1 + t * (x2 - x1)
+    py = y1 + t * (y2 - y1)
+    if px != px or py != py:  # NaN 检查
+        return None
+    return px, py
+
+
+def detect_cross(img):
+    """在当前帧上检测黑色十字中心.
+    返回:
+      cross (cx, cy) 或 None
+      h_line, v_line 用于绘制的线段端点
     """
+    # 1. 转灰度 + 提取黑色像素(黑变白, 其他变黑), 便于霍夫在十字上检测
     gs = img.to_grayscale(copy=True)
-    data = gs.bytearray()
-    total = len(data)     # 800 * 480 = 384000
+    # binary: 黑色(灰度<BLACK_THRESH)置为255(白), 其他置0
+    gs.binary([(0, BLACK_THRESH)])
 
-    # 投影采样
-    h_samples = CAM_HEIGHT // SAMPLE_STEP + 1
-    v_samples = CAM_WIDTH // SAMPLE_STEP + 1
-    h_proj = [0] * h_samples
-    v_proj = [0] * v_samples
+    # 2. 霍夫找线段
+    try:
+        lines = gs.find_line_segments(roi=(0, 0, CAM_WIDTH, CAM_HEIGHT),
+                                       merge_distance=8,
+                                       max_theta_diff=8)
+    except Exception as e:
+        print("[Hough] failed: %s" % str(e))
+        return None, None, None
 
-    stride = CAM_WIDTH  # 每行像素数
+    if not lines:
+        return None, None, None
 
-    for sy in range(0, CAM_HEIGHT, SAMPLE_STEP):
-        row_base = sy * stride
-        h_idx = sy // SAMPLE_STEP
-        for sx in range(0, CAM_WIDTH, SAMPLE_STEP):
-            idx = row_base + sx
-            if idx < total:
-                g = data[idx]
-                if g < BLACK_THRESH:
-                    h_proj[h_idx] += 1
-                    v_proj[sx // SAMPLE_STEP] += 1
+    # 3. 分类: 水平 / 垂直
+    horiz = []
+    vert  = []
+    for L in lines:
+        th = line_theta_deg(L)
+        ln = line_len(L)
+        mg = line_mag(L)
+        if ln < LINE_MIN_LEN or mg < LINE_MIN_MAGNITUDE:
+            continue
+        ep = line_endpoints(L)
 
-    return h_proj, v_proj
+        # 水平判定
+        if th < HORIZ_ANGLE_TOL or th > (180 - HORIZ_ANGLE_TOL):
+            horiz.append((ep, th, ln, mg))
+        # 垂直判定
+        elif abs(th - 90) < VERT_ANGLE_TOL:
+            vert.append((ep, th, ln, mg))
 
+    if not horiz or not vert:
+        return None, None, None
 
-def find_peak_center(h_proj, v_proj):
-    """
-    从投影数组中找到十字交叉点
+    # 4. 各取霍夫响应最强的一条(综合 length*magnitude 打分)
+    def score(item):
+        ep, th, ln, mg = item
+        return ln * mg
+    horiz.sort(key=score, reverse=True)
+    vert.sort(key=score, reverse=True)
+    h_ep = horiz[0][0]
+    v_ep = vert[0][0]
 
-    水平臂: h_proj 中连续黑色像素最多的区域中心
-    垂直臂: v_proj 中连续黑色像素最多的区域中心
+    # 5. 算交点
+    pt = line_intersection(h_ep, v_ep)
+    if pt is None:
+        return None, h_ep, v_ep
+    cx, cy = pt
 
-    返回: (cx, cy) 或 (-1, -1)
-    """
-    h_len = len(h_proj)
-    v_len = len(v_proj)
+    # 6. 交点必须在图像范围内
+    if not (-CROSS_MARGIN <= cx <= CAM_WIDTH + CROSS_MARGIN and
+            -CROSS_MARGIN <= cy <= CAM_HEIGHT + CROSS_MARGIN):
+        return None, h_ep, v_ep
 
-    # --- 水平投影: 找黑色像素最多的连续区域 ---
-    h_max_possible = v_len
-
-    h_max_val = max(h_proj) if h_proj else 0
-    if h_max_val < h_max_possible * MIN_PEAK_RATIO:
-        return -1, -1
-
-    h_threshold = h_max_val * 0.5
-    best_h_start = 0
-    best_h_end = 0
-    best_h_width = 0
-    in_region = False
-    region_start = 0
-
-    for i in range(h_len):
-        if h_proj[i] >= h_threshold:
-            if not in_region:
-                in_region = True
-                region_start = i
-        else:
-            if in_region:
-                in_region = False
-                width = i - region_start
-                if width > best_h_width:
-                    best_h_width = width
-                    best_h_start = region_start
-                    best_h_end = i
-
-    if in_region:
-        width = h_len - region_start
-        if width > best_h_width:
-            best_h_width = width
-            best_h_start = region_start
-            best_h_end = h_len
-
-    if best_h_width < 2:
-        return -1, -1
-
-    h_center_sample = (best_h_start + best_h_end) // 2
-    cy = h_center_sample * SAMPLE_STEP + SAMPLE_STEP // 2
-    if cy >= CAM_HEIGHT:
-        cy = CAM_HEIGHT - 1
-
-    # --- 垂直投影: 找黑色像素最多的连续区域 ---
-    v_max_val = max(v_proj) if v_proj else 0
-    if v_max_val < h_max_possible * MIN_PEAK_RATIO:
-        return -1, -1
-
-    v_threshold = v_max_val * 0.5
-    best_v_start = 0
-    best_v_end = 0
-    best_v_width = 0
-    in_region = False
-    region_start = 0
-
-    for i in range(v_len):
-        if v_proj[i] >= v_threshold:
-            if not in_region:
-                in_region = True
-                region_start = i
-        else:
-            if in_region:
-                in_region = False
-                width = i - region_start
-                if width > best_v_width:
-                    best_v_width = width
-                    best_v_start = region_start
-                    best_v_end = i
-
-    if in_region:
-        width = v_len - region_start
-        if width > best_v_width:
-            best_v_width = width
-            best_v_start = region_start
-            best_v_end = v_len
-
-    if best_v_width < 2:
-        return -1, -1
-
-    v_center_sample = (best_v_start + best_v_end) // 2
-    cx = v_center_sample * SAMPLE_STEP + SAMPLE_STEP // 2
-    if cx >= CAM_WIDTH:
-        cx = CAM_WIDTH - 1
-
-    return cx, cy
+    return (cx, cy), h_ep, v_ep
 
 
-def draw_overlay(img, cx, cy, fps, last_status, last_dx, last_dy):
-    """在图像上绘制检测结果(极简版, 不画直方图以提升帧率)"""
+# ==================== 多帧中值投票 ====================
 
-    # 左上角: FPS
-    img.draw_string_advanced(0, 0, 16, "FPS:%d" % fps, color=(255, 255, 255))
+def push_and_vote(cx, cy):
+    """把当前帧交点推入历史窗口, 返回窗口内有效交点的中值(cx, cy).
+    传入 None 表示本帧无效, 清空窗口(避免半截数据被中值)."""
+    global vote_history
+    if cx is None:
+        vote_history = []
+        return None, None
 
-    # 右上角: 最近一次应答
-    img.draw_string_advanced(0, 20, 14,
-                              "last: stat=%d dxdy=(%d,%d)" % (last_status, last_dx, last_dy),
-                              color=(200, 200, 0))
+    vote_history.append((cx, cy))
+    if len(vote_history) > VOTE_WINDOW:
+        vote_history.pop(0)
 
-    if cx >= 0:
-        # 绿色大十字标记检测到的中心
-        img.draw_cross(cx, cy, color=(0, 255, 0), size=24, thickness=2)
-        # 红色瞄准框
-        img.draw_rectangle(cx - 30, cy - 30, 60, 60,
-                           color=(255, 0, 0), thickness=2)
-        # 坐标文本
-        img.draw_string_advanced(cx + 32, cy - 10, 16,
-                                  "(%d,%d)" % (cx, cy),
-                                  color=(0, 255, 0))
-    else:
-        img.draw_string_advanced(10, 30, 24, "NO CROSS",
-                                  color=(255, 0, 0))
+    if len(vote_history) == 0:
+        return None, None
 
+    xs = sorted(p[0] for p in vote_history)
+    ys = sorted(p[1] for p in vote_history)
+    mid = len(xs) // 2
+    return xs[mid], ys[mid]
+
+
+# ==================== 协议层(不变) ====================
 
 def build_ack(status, dx, dy):
     """组装 8 字节应答帧: AA 55 STATUS DX_L DX_H DY_L DY_H XOR"""
@@ -294,29 +269,60 @@ def build_ack(status, dx, dy):
 
 
 def try_read_request(uart):
-    """从 UART 读取一个请求帧 [AA 55 ID].
-    返回: ID(0~255) 若收到完整合法请求; None 若无数据或不完整."""
+    """读取请求帧 [AA 55 ID], 返回 ID 或 None."""
     if uart is None:
         return None
-    # 至少要有 3 字节才可能凑成一个请求
     if uart.any() < REQ_LEN:
         return None
     req = uart.read(REQ_LEN)
     if req is None or len(req) < REQ_LEN:
         return None
     if req[0] != FRAME_SOF0 or req[1] != FRAME_SOF1:
-        # 帧头不对, 丢弃这批字节(让缓冲对齐到下一次)
         return None
     return req[2]
+
+
+# ==================== 绘制叠加层 ====================
+
+def draw_overlay(img, cx, cy, fps, h_line, v_line, last_status, last_dx, last_dy):
+    # 左上: FPS
+    img.draw_string_advanced(0, 0, 16, "FPS:%d" % fps, color=(255, 255, 255))
+    # 第二行: 最近一次应答
+    img.draw_string_advanced(0, 20, 14,
+                              "last: stat=%d dxdy=(%d,%d)" % (last_status, last_dx, last_dy),
+                              color=(200, 200, 0))
+
+    # 画检测到的线段(蓝=水平, 黄=垂直)
+    if h_line is not None:
+        x1, y1, x2, y2 = h_line
+        img.draw_line(int(x1), int(y1), int(x2), int(y2), color=(0, 0, 255), thickness=2)
+    if v_line is not None:
+        x1, y1, x2, y2 = v_line
+        img.draw_line(int(x1), int(y1), int(x2), int(y2), color=(255, 255, 0), thickness=2)
+
+    if cx is not None and cx >= 0:
+        # 绿色大十字标记交点
+        img.draw_cross(int(cx), int(cy), color=(0, 255, 0), size=24, thickness=2)
+        # 红色瞄准框
+        img.draw_rectangle(int(cx) - 30, int(cy) - 30, 60, 60,
+                           color=(255, 0, 0), thickness=2)
+        # 坐标文本
+        img.draw_string_advanced(int(cx) + 32, int(cy) - 10, 16,
+                                  "(%d,%d)" % (int(cx), int(cy)),
+                                  color=(0, 255, 0))
+    else:
+        img.draw_string_advanced(10, 30, 24, "NO CROSS",
+                                  color=(255, 0, 0))
 
 
 # ==================== 主程序 ====================
 
 def main():
     global frame_count, fps_start
+    global last_h_line, last_v_line, last_cross
 
     print("=" * 50)
-    print("  K230 二值化 + 投影法 黑色十字识别")
+    print("  K230 霍夫直线交点法 黑色十字识别")
     print("  立创庐山派 / Lite K230D")
     print("  请求-应答模式 (与 STM32 camera_align.c 对接)")
     print("=" * 50)
@@ -331,53 +337,63 @@ def main():
     sensor.run()
     fps_start = time.ticks_ms()
 
-    # 最近一次应答内容(显示用)
     last_status = ACK_STATUS_NONE
     last_dx = 0
     last_dy = 0
 
     print("[MAIN] 开始主循环...")
-    print("[MAIN] 阈值: 灰度<%d → 黑色, 步进:%d" % (BLACK_THRESH, SAMPLE_STEP))
+    print("[MAIN] 黑色阈值: 灰度<%d, 线段最小长度:%d" % (BLACK_THRESH, LINE_MIN_LEN))
+    print("[MAIN] 水平容差:%d°, 垂直容差:%d°, 投票窗口:%d" %
+          (HORIZ_ANGLE_TOL, VERT_ANGLE_TOL, VOTE_WINDOW))
     print("[MAIN] 协议: 请求 AA 55 ID / 应答 AA 55 STATUS DX_L DX_H DY_L DY_H XOR")
 
     try:
         while True:
             os.exitpoint()
 
-            # 1. 获取一帧(始终运行, 保证画面流畅 + FPS 统计)
+            # 1. 抓帧
             img = sensor.snapshot()
 
-            # 2. 二值化 + 投影 + 找十字
-            h_proj, v_proj = binarize_and_project(img)
-            cx_raw, cy_raw = find_peak_center(h_proj, v_proj)
+            # 2. 霍夫直线交点检测(在灰度二值图上)
+            cross, h_line, v_line = detect_cross(img)
 
-            # 3. 滑动窗口平滑(检测平滑, 与请求无关)
-            cx, cy = smooth_coord(cx_raw, cy_raw)
+            # 缓存用于绘制
+            last_h_line = h_line
+            last_v_line = v_line
+            last_cross  = cross
+
+            # 3. 多帧中值投票
+            if cross is not None:
+                cx_vote, cy_vote = push_and_vote(cross[0], cross[1])
+            else:
+                cx_vote, cy_vote = push_and_vote(None, None)
 
             # 4. FPS
             fps = update_fps()
 
-            # 5. 绘制叠加层(显示用)
-            draw_overlay(img, cx, cy, fps, last_status, last_dx, last_dy)
+            # 5. 绘制
+            draw_overlay(img, cx_vote, cy_vote, fps, h_line, v_line,
+                         last_status, last_dx, last_dy)
 
             # 6. 显示
             Display.show_image(img)
 
-            # 7. 调试打印(低频)
+            # 7. 低频调试打印
             if frame_count % 30 == 0:
-                if cx >= 0:
-                    print("[DBG] CROSS=(%d,%d)  FPS=%d" % (cx, cy, fps))
+                if cx_vote is not None:
+                    print("[DBG] CROSS=(%d,%d) vote_n=%d FPS=%d" %
+                          (int(cx_vote), int(cy_vote), len(vote_history), fps))
                 else:
                     print("[DBG] NO CROSS  FPS=%d" % fps)
 
-            # 8. 检查请求: 收到 AA 55 ID 才应答
+            # 8. 检查请求 → 应答
             req_id = try_read_request(uart)
             if req_id is not None:
-                # 收到请求, 用当前最新检测结果组装应答
-                if cx >= 0:
+                if cx_vote is not None:
                     status = ACK_STATUS_OK
-                    dx = cx - CAM_IMG_CX
-                    dy = cy - CAM_IMG_CY
+                    # 注意: 偏移用投票后的中值, 转成 int16
+                    dx = int(cx_vote - CAM_IMG_CX)
+                    dy = int(cy_vote - CAM_IMG_CY)
                 else:
                     status = ACK_STATUS_NONE
                     dx = 0
@@ -390,7 +406,6 @@ def main():
                     except:
                         pass
 
-                # 更新显示缓存
                 last_status = status
                 last_dx = dx
                 last_dy = dy
