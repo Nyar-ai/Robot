@@ -15,6 +15,13 @@ BLACK_THRESH = 80
 SAMPLE_STEP = 8
 MIN_PEAK_RATIO = 0.08
 VOTE_WINDOW = 5
+
+# ROI (Region of Interest) - 排除车体自身区域
+# 摄像头装在车尾, 车体出现在画面下部, 裁剪掉底部若干行
+ROI_ENABLE = True           # 是否启用 ROI
+ROI_Y_START = 0             # ROI 起始 Y(含), 保持 0(顶部不变)
+ROI_Y_END   = 360           # ROI 结束 Y(不含), 即排除 Y>=360 的车体区域(可实测调)
+
 SHOW_DIAG_PANE = True
 DIAG_PANE_X = 560
 DIAG_PANE_W = CAM_WIDTH - DIAG_PANE_X
@@ -141,16 +148,26 @@ def binarize_and_project(gs_img):
         data = gs_img.bytearray()
     except:
         data = None
-    h_samples = CAM_HEIGHT // SAMPLE_STEP + 1
+
+    # ROI 范围确定
+    if ROI_ENABLE:
+        y_start = ROI_Y_START
+        y_end   = ROI_Y_END
+    else:
+        y_start = 0
+        y_end   = CAM_HEIGHT
+
+    roi_height = y_end - y_start
+    h_samples = roi_height // SAMPLE_STEP + 1
     v_samples = CAM_WIDTH // SAMPLE_STEP + 1
     h_proj = [0] * h_samples
     v_proj = [0] * v_samples
     stride = CAM_WIDTH
     if data is not None:
         total = len(data)
-        for sy in range(0, CAM_HEIGHT, SAMPLE_STEP):
+        for sy in range(y_start, y_end, SAMPLE_STEP):
             row_base = sy * stride
-            h_idx = sy // SAMPLE_STEP
+            h_idx = (sy - y_start) // SAMPLE_STEP
             for sx in range(0, CAM_WIDTH, SAMPLE_STEP):
                 idx = row_base + sx
                 if idx < total:
@@ -158,8 +175,8 @@ def binarize_and_project(gs_img):
                         h_proj[h_idx] += 1
                         v_proj[sx // SAMPLE_STEP] += 1
     else:
-        for sy in range(0, CAM_HEIGHT, SAMPLE_STEP):
-            h_idx = sy // SAMPLE_STEP
+        for sy in range(y_start, y_end, SAMPLE_STEP):
+            h_idx = (sy - y_start) // SAMPLE_STEP
             for sx in range(0, CAM_WIDTH, SAMPLE_STEP):
                 g = gs_img.get_pixel(sx, sy)
                 if g is not None and g != 0:
@@ -168,7 +185,7 @@ def binarize_and_project(gs_img):
     return h_proj, v_proj
 
 
-def find_peak_center(h_proj, v_proj):
+def find_peak_center(h_proj, v_proj, roi_y_start=0):
     h_len = len(h_proj)
     v_len = len(v_proj)
     h_max_possible = v_len
@@ -203,9 +220,7 @@ def find_peak_center(h_proj, v_proj):
     if best_h_width < 2:
         return -1, -1
     h_center_sample = (best_h_start + best_h_end) // 2
-    cy = h_center_sample * SAMPLE_STEP + SAMPLE_STEP // 2
-    if cy >= CAM_HEIGHT:
-        cy = CAM_HEIGHT - 1
+    cy = h_center_sample * SAMPLE_STEP + SAMPLE_STEP // 2 + roi_y_start
     v_max_val = max(v_proj) if v_proj else 0
     if v_max_val < h_max_possible * MIN_PEAK_RATIO:
         return -1, -1
@@ -261,7 +276,8 @@ def detect_cross(img):
         return None, (thresh, black_pct, sample_gray, None)
     bin_img = gs
     h_proj, v_proj = binarize_and_project(gs)
-    cx, cy = find_peak_center(h_proj, v_proj)
+    roi_ys = ROI_Y_START if ROI_ENABLE else 0
+    cx, cy = find_peak_center(h_proj, v_proj, roi_ys)
     if cx < 0 or cy < 0:
         return None, (thresh, black_pct, sample_gray, bin_img)
     return (cx, cy), (thresh, black_pct, sample_gray, bin_img)
