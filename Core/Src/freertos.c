@@ -29,6 +29,7 @@
 #include "stepper.h"
 #include "mpu6050.h"
 #include "usart.h"
+#include "camera_align.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -102,6 +103,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   chassis_init();
   Stepper_Init();          /* 配置 4 个步进定时器(Prescaler/ARR/占空比), 不立即转 */
+  camera_align_init();     /* 摄像头地标校准模块(USART2 + DMA + 信号量) */
   /* MPU6050 初始化放在 gyroTask 里(因为它需要 HAL_Delay, 不能在内核启动前调) */
   /* USER CODE END Init */
 
@@ -175,6 +177,20 @@ void StartDefaultTask(void *argument)
       if (done) {
         chassis_uart_log("[1] reached (500.0f, 0.0f)\r\n");
         settle = 30;          /* 约 300ms 停顿, 便于观察 */
+
+        /* ---- 摄像头地标校准演示: 车停稳后用 0 号十字(假设世界坐标 500,0)校正 ----
+         * 占位坐标, 实际部署需替换为地图上 0 号十字的真实世界坐标.
+         * camera_align_at 内部 DMA 异步 + 信号量, 调用期间任务挂起, 不影响 1ms 控制环. */
+        {
+          bool ok = camera_align_at(0, 500.0f, 0.0f, 0);
+          int16_t ldx, ldy; uint8_t lstat;
+          camera_align_get_last_raw(&ldx, &ldy, &lstat);
+          float nx, ny, nth;
+          chassis_get_pose(&nx, &ny, &nth);
+          chassis_uart_log("[align] id=0 ok=%d stat=%d dxdy=(%d,%d)px -> pose(%.1f,%.1f,%.1f)\r\n",
+                           ok, lstat, ldx, ldy, nx, ny, nth);
+        }
+
         demo_state = DS_TURN3;
       }
       break;
