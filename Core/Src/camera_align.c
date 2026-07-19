@@ -99,36 +99,43 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
     xSemaphoreTake(g_cam_tx_sem, 0);
     xSemaphoreTake(g_cam_rx_sem, 0);
 
-    /* ---- 1. 组请求帧 + DMA 发送 ---- */
+    /* ---- 1. 组请求帧 ---- */
     g_tx_buf[0] = CAM_FRAME_SOF0;
     g_tx_buf[1] = CAM_FRAME_SOF1;
     g_tx_buf[2] = id;
 
-    g_tx_busy = true;
-    HAL_StatusTypeDef st = HAL_UART_Transmit_DMA(&huart2, g_tx_buf, CAM_REQ_LEN);
-    if (st != HAL_OK) {
-        g_tx_busy = false;
-        return false;
-    }
-
-    /* 等待发送完成(DMA TC → HAL_UART_TxCpltCallback → 释放信号量) */
-    if (xSemaphoreTake(g_cam_tx_sem, pdMS_TO_TICKS(100)) != pdTRUE) {
-        g_tx_busy = false;
-        /* 发送超时, 强制中止, 释放 UART 状态 */
-        HAL_UART_AbortTransmit(&huart2);
-        return false;
-    }
-    g_tx_busy = false;
-
-    /* ---- 2. 启动 DMA 接收(收满 8 字节应答) ---- */
+    /* ---- 2. 先启动 DMA 接收(收满 8 字节应答) ---- */
+    /* 在发送请求之前启动接收, 避免发送完成到接收启动之间的竞态窗口
+     * 导致应答首字节丢失. USART2 全双工, TX/RX DMA 独立工作, 可同时进行. */
     g_rx_busy = true;
-    st = HAL_UART_Receive_DMA(&huart2, g_rx_buf, CAM_ACK_LEN);
+    HAL_StatusTypeDef st = HAL_UART_Receive_DMA(&huart2, g_rx_buf, CAM_ACK_LEN);
     if (st != HAL_OK) {
         g_rx_busy = false;
         return false;
     }
 
-    /* 等待接收完成(DMA 收满 → HAL_UART_RxCpltCallback → 释放信号量) */
+    /* ---- 3. 启动 DMA 发送请求 ---- */
+    g_tx_busy = true;
+    st = HAL_UART_Transmit_DMA(&huart2, g_tx_buf, CAM_REQ_LEN);
+    if (st != HAL_OK) {
+        g_tx_busy = false;
+        g_rx_busy = false;
+        HAL_UART_AbortReceive(&huart2);
+        return false;
+    }
+
+    /* ---- 4. 等待发送完成(DMA TC → HAL_UART_TxCpltCallback → 释放信号量) ---- */
+    if (xSemaphoreTake(g_cam_tx_sem, pdMS_TO_TICKS(100)) != pdTRUE) {
+        g_tx_busy = false;
+        g_rx_busy = false;
+        /* 发送超时, 强制中止, 释放 UART 状态 */
+        HAL_UART_AbortTransmit(&huart2);
+        HAL_UART_AbortReceive(&huart2);
+        return false;
+    }
+    g_tx_busy = false;
+
+    /* ---- 5. 等待接收完成(DMA 收满 → HAL_UART_RxCpltCallback → 释放信号量) ---- */
     bool rx_ok = (xSemaphoreTake(g_cam_rx_sem, pdMS_TO_TICKS(timeout_ms)) == pdTRUE);
     g_rx_busy = false;
     if (!rx_ok) {
@@ -136,7 +143,7 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
         return false;
     }
 
-    /* ---- 3. 校验帧头 + XOR ---- */
+    /* ---- 6. 校验帧头 + XOR ---- */
     if (g_rx_buf[0] != CAM_FRAME_SOF0 || g_rx_buf[1] != CAM_FRAME_SOF1) {
         return false;
     }
@@ -146,7 +153,7 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
         return false;
     }
 
-    /* ---- 4. 解析 STATUS + DX/DY(int16 小端) ---- */
+    /* ---- 7. 解析 STATUS + DX/DY(int16 小端) ---- */
     uint8_t status = g_rx_buf[2];
     int16_t dx_px = (int16_t)((uint16_t)g_rx_buf[3] | ((uint16_t)g_rx_buf[4] << 8));
     int16_t dy_px = (int16_t)((uint16_t)g_rx_buf[5] | ((uint16_t)g_rx_buf[6] << 8));
@@ -160,7 +167,7 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
         return false;
     }
 
-    /* ---- 5. 像素偏移 → 车体系 mm → 世界系偏移 → 反推车位姿 ---- */
+    /* ---- 8. 像素偏移 → 车体系 mm → 世界系偏移 → 反推车位姿 ---- */
     float off_wx, off_wy;
     float x_now, y_now, theta_now;
     chassis_get_pose(&x_now, &y_now, &theta_now);   /* θ 仍信陀螺仪, 不改 */
@@ -169,7 +176,7 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
     float car_x = cross_wx - off_wx;
     float car_y = cross_wy - off_wy;
 
-    /* ---- 6. 原子注入 chassis(与 1ms chassisTask 读竞争保护) ---- */
+    /* ---- 9. 原子注入 chassis(与 1ms chassisTask 读竞争保护) ---- */
     taskENTER_CRITICAL();
     chassis_set_pose(car_x, car_y, theta_now);
     taskEXIT_CRITICAL();
