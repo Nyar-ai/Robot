@@ -158,125 +158,19 @@ void StartDefaultTask(void *argument)
    */
   (void)argument;
 
-  enum { DS_MOVE1, DS_MOVE2, DS_MOVE3, DS_MOVE4, DS_MOVE5, DS_DONE, DS_TURN1, DS_TURN2, DS_TURN3, DS_TURN4, DS_TURN5};
-  uint8_t demo_state = DS_MOVE1;
-  uint8_t log_div = 0;
-  uint8_t settle = 0;  /* 到达后短暂停留计数 */
-
-  chassis_uart_log("\r\n[chassis demo] start (world frame)\r\n");
+  chassis_uart_log("\r\n[cam test] start\r\n");
 
   for (;;)
   {
-    bool done = false;
-    switch (demo_state)
-    {
-    case DS_MOVE1:
-      /* 平移到世界坐标 (1000, 0) mm */
-      if (settle > 0) { settle--; break; }
-      done = move_to_coordinate(500.0f, 0.0f);
-      if (done) {
-        chassis_uart_log("[1] reached (500.0f, 0.0f)\r\n");
-        settle = 30;          /* 约 300ms 停顿, 便于观察 */
-
-        /* ---- 摄像头地标校准演示: 车停稳后用 0 号十字(假设世界坐标 500,0)校正 ----
-         * 占位坐标, 实际部署需替换为地图上 0 号十字的真实世界坐标.
-         * camera_align_at 内部 DMA 异步 + 信号量, 调用期间任务挂起, 不影响 1ms 控制环. */
-        {
-          bool ok = camera_align_at(0, 500.0f, 0.0f, 0);
-          int16_t ldx, ldy; uint8_t lstat;
-          camera_align_get_last_raw(&ldx, &ldy, &lstat);
-          float nx, ny, nth;
-          chassis_get_pose(&nx, &ny, &nth);
-          chassis_uart_log("[align] id=0 ok=%d stat=%d dxdy=(%d,%d)px -> pose(%.1f,%.1f,%.1f)\r\n",
-                           ok, lstat, ldx, ldy, nx, ny, nth);
-        }
-
-        demo_state = DS_TURN3;
-      }
-      break;
-    case DS_TURN3:
-      /* 平移到世界坐标 (1000, 0) mm */
-      done = headturn(0);
-      if (done) {
-        chassis_uart_log("[3] headturn(0)\r\n");
-        settle = 30;          /* 约 300ms 停顿, 便于观察 */
-        demo_state = DS_MOVE2;
-      }
-      break;
-    case DS_MOVE2:
-      if (settle > 0) { settle--; break; }
-      /* 转向到绝对角度 90 度 (有陀螺仪则用陀螺仪, 否则里程计积分) */
-      //done = headturn(90);
-      done = move_to_coordinate(500.0f, 500.0f);
-      if (done) {
-        chassis_uart_log("[2] reached (500.0f, 500.0f), demo done\r\n");
-        settle = 30;
-        demo_state = DS_TURN1;
-      }
-      break;
-    case DS_TURN1:
-      /* 平移到世界坐标 (1000, 0) mm */
-      done = headturn(0);
-      if (done) {
-        chassis_uart_log("[1] headturn(90)\r\n");
-        settle = 30;          /* 约 300ms 停顿, 便于观察 */
-        demo_state = DS_MOVE3;
-      }
-      break;
-    case DS_MOVE3:
-      if (settle > 0) { settle--; break; }
-      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
-      done = move_to_coordinate(0.0f, 500.0f);
-      if (done) {
-        chassis_uart_log("[3] reached (0.0f, 500.0f), demo done\r\n");
-        demo_state = DS_TURN2;
-      }
-      break;
-    case DS_TURN2:
-      if (settle > 0) { settle--; break; }
-      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
-      done = headturn(0);
-      if (done) {
-        chassis_uart_log("[2] headturn(0), demo done\r\n");
-        demo_state = DS_MOVE4;
-      }
-      break;
-    case DS_MOVE4:
-      if (settle > 0) { settle--; break; }
-      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
-      done = move_to_coordinate(0.0f, 0.0f);
-      if (done) {
-        chassis_uart_log("[4] reached (0.0f, 0.0f), demo done\r\n");
-        demo_state = DS_TURN4;
-      }
-      break;
-    case DS_TURN4:
-      if (settle > 0) { settle--; break; }
-      /* 此时车头已转 90°, 仍以世界坐标系走到 (1000, 500) */
-      done = headturn(0);
-      if (done) {
-        chassis_uart_log("[4] headturn(0), demo done\r\n");
-        demo_state = DS_MOVE1;
-      }
-      break;
-    case DS_DONE:
-    default:
-      break;
-    }
-
-    /* 每 100ms 打印位姿与 4 轮目标线速度 (上位机观察) */
-    if (++log_div >= 10)
-    {
-      log_div = 0;
-      float x, y, th;
-      float w[4];
-      chassis_get_pose(&x, &y, &th);
-      chassis_get_wheel_speed(w);
-      chassis_uart_log("pose x=%.1f y=%.1f th=%.1f | w=[%.0f %.0f %.0f %.0f]\r\n",
-                       x, y, th, w[0], w[1], w[2], w[3]);
-    }
-
-    osDelay(10);   /* 10ms 节拍 */
+    /* ===== 纯摄像头测试 ===== */
+    bool ok = camera_align_at(0, 0.0f, 0.0f, 1000);
+    int16_t ldx, ldy; uint8_t lstat;
+    camera_align_get_last_raw(&ldx, &ldy, &lstat);
+    float nx, ny, nth;
+    chassis_get_pose(&nx, &ny, &nth);
+    chassis_uart_log("[cam] ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n",
+                     ok, lstat, ldx, ldy, nx, ny, nth);
+    osDelay(1000);
   }
   /* USER CODE END StartDefaultTask */
 }

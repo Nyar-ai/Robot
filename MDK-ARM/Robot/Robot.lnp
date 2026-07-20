@@ -3,6 +3,7 @@
 "robot\scurve.o"
 "robot\mecanum.o"
 "robot\chassis.o"
+"robot\camera_align.o"
 "robot\stepper.o"
 "robot\mpu6050.o"
 "robot\main.o"
