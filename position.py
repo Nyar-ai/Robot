@@ -11,9 +11,9 @@ CAM_WIDTH = 800
 CAM_HEIGHT = 480
 CAM_IMG_CX = CAM_WIDTH // 2
 CAM_IMG_CY = CAM_HEIGHT // 2
-UART_ID = 2
+UART_ID = 3
 UART_BAUD = 115200
-USE_OTSU = True
+USE_OTSU = False
 BLACK_THRESH = 80
 SAMPLE_STEP = 8
 MIN_PEAK_RATIO = 0.08
@@ -29,7 +29,7 @@ ACK_STATUS_NONE = 0
 # 摄像头装在车尾, 车体出现在画面下部, 裁剪掉底部若干行
 ROI_ENABLE = True           # 是否启用 ROI
 ROI_Y_START = 0             # ROI 起始 Y(含), 保持 0(顶部不变)
-ROI_Y_END   = 360           # ROI 结束 Y(不含), 即排除 Y>=360 的车体区域(可实测调)
+ROI_Y_END   = 380           # ROI 结束 Y(不含), 即排除 Y>=360 的车体区域(可实测调)
 
 frame_count = 0
 fps_start = 0
