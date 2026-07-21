@@ -5,14 +5,12 @@ from media.sensor import *
 from media.display import *
 from media.media import *
 import image
-from machine import UART
+from machine import UART, FPIOA
 
 CAM_WIDTH = 800
 CAM_HEIGHT = 480
 CAM_IMG_CX = CAM_WIDTH // 2
 CAM_IMG_CY = CAM_HEIGHT // 2
-UART_ID = 3
-UART_BAUD = 115200
 USE_OTSU = False
 BLACK_THRESH = 75
 SAMPLE_STEP = 8
@@ -50,11 +48,14 @@ def init_display():
 
 
 def init_uart():
-    try:
-        return UART(UART_ID, UART_BAUD)
-    except Exception as e:
-        print("[UART] failed: " + str(e))
-        return None
+    # 配置 UART3 引脚: 丝印T=GPIO50(TX), 丝印R=GPIO51(RX)
+    fpioa = FPIOA()
+    fpioa.set_function(50, FPIOA.UART3_TXD)
+    fpioa.set_function(51, FPIOA.UART3_RXD)
+    uart = UART(UART.UART3, baudrate=115200,
+                bits=UART.EIGHTBITS, parity=UART.PARITY_NONE, stop=UART.STOPBITS_ONE)
+    print("[UART] UART3 init ok: GPIO50(TX), GPIO51(RX), 115200 8N1")
+    return uart
 
 
 def update_fps():
@@ -268,16 +269,14 @@ def build_ack(status, dx, dy):
 
 
 def try_read_request(uart):
-    if uart is None:
+    # 非阻塞读取所有可用数据，查找帧头 AA 55
+    data = uart.read()
+    if not data or len(data) < REQ_LEN:
         return None
-    if uart.any() < REQ_LEN:
-        return None
-    req = uart.read(REQ_LEN)
-    if req is None or len(req) < REQ_LEN:
-        return None
-    if req[0] != FRAME_SOF0 or req[1] != FRAME_SOF1:
-        return None
-    return req[2]
+    for i in range(len(data) - REQ_LEN + 1):
+        if data[i] == FRAME_SOF0 and data[i + 1] == FRAME_SOF1:
+            return data[i + 2]
+    return None
 
 
 def draw_overlay(img, cx, cy, fps, last_status, last_dx, last_dy):
@@ -343,11 +342,7 @@ def main():
                     dx = 0
                     dy = 0
                 ack = build_ack(status, dx, dy)
-                if uart is not None:
-                    try:
-                        uart.write(ack)
-                    except:
-                        pass
+                uart.write(ack)
                 last_status = status
                 last_dx = dx
                 last_dy = dy
@@ -360,6 +355,8 @@ def main():
     finally:
         sensor.stop()
         Display.deinit()
+        uart.deinit()
+        print("[INFO] UART 资源已释放")
         os.exitpoint(os.EXITPOINT_ENABLE_SLEEP)
         time.sleep_ms(100)
         MediaManager.deinit()
