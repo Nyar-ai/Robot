@@ -149,28 +149,160 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /*
-   * 指令层(状态机, 非阻塞): 世界坐标系下走一条路径.
+   * 指令层(状态机, 非阻塞): 前进500mm → 回原点 → 摄像头校准 → 循环
    * 设计要点:
-   *   - move_to_coordinate / headturn 均为"发起-查询"语义, 反复调用同一目标
-   *     仅在目标变化时重新规划, 否则只查询 arrived 状态.
-   *   - 本任务为低优先级, 可做阻塞串口打印; 控制环在 chassisTask(1ms) 中独立运行.
-   *   - 10ms 节拍查询状态, 100ms 节拍打印一次 pose/轮速.
+   *   - move_to_coordinate 为"发起-查询"语义, 同一目标反复调用只查询 arrived 状态
+   *   - camera_align_at 在车停稳后于原点处校准坐标
+   *   - 本任务为低优先级, 可做阻塞串口打印; 控制环在 chassisTask(1ms) 中独立运行
+   *   - 10ms 节拍轮询状态
    */
   (void)argument;
 
-  chassis_uart_log("\r\n[cam test] start\r\n");
-
+  enum { STATE_MOVE1,STATE_CALIBRATE1,STATE_MOVE2,STATE_TURN1,STATE_MOVE3,STATE_MOVE4,STATE_CALIBRATE2,STATE_MOVE5,STATE_CALIBRATE3,STATE_MOVE6} state = STATE_MOVE1;
+  chassis_uart_log("\r\n[task] auto-cycle start: forward 500mm -> return -> calibrate -> loop\r\n");
+  chassis_set_pose(0, -780, 0);
+  chassis_uart_log("\r\n[task] set pose to (0, 950, 0)\r\n");
   for (;;)
   {
-    /* ===== 纯摄像头测试 ===== */
-    bool ok = camera_align_at(0, 0.0f, 0.0f, 1000);
-    int16_t ldx, ldy; uint8_t lstat;
-    camera_align_get_last_raw(&ldx, &ldy, &lstat);
-    float nx, ny, nth;
-    chassis_get_pose(&nx, &ny, &nth);
-    chassis_uart_log("[cam] ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n",
-                     ok, lstat, ldx, ldy, nx, ny, nth);
-    osDelay(1000);
+    switch (state)
+    {
+      case STATE_MOVE1:
+      {
+        /* 前进至 (0, 0) */
+        bool arrived = move_to_coordinate(120.0f, 0.0f);
+        if (arrived)
+        {
+          float x, y, th;
+          chassis_get_pose(&x, &y, &th);
+          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+          state = STATE_CALIBRATE1;
+        }
+        break;
+      }
+      case STATE_CALIBRATE1:
+      {
+        /* 在原点用摄像头校准坐标 (十字地标世界坐标假定为原点) */
+        bool ok = camera_align_at(0.0f, 0.0f, 0.0f, 1000);
+        int16_t ldx, ldy; uint8_t lstat;
+        camera_align_get_last_raw(&ldx, &ldy, &lstat);
+        float nx, ny, nth;
+        chassis_get_pose(&nx, &ny, &nth);
+        chassis_uart_log("[task] calibrate  ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n", ok, lstat, ldx, ldy, nx, ny, nth);
+        
+        state = STATE_MOVE2;
+        break;
+      }
+      case STATE_MOVE2:
+      {
+        /* 前进至 (0, 0) */
+        bool arrived = move_to_coordinate(0.0f, 0.0f);
+        if (arrived)
+        {
+          float x, y, th;
+          chassis_get_pose(&x, &y, &th);
+          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+          state = STATE_TURN1;
+        }
+        break;
+      }
+      case STATE_TURN1:
+      {
+        /* 回到原点 (0, 0) */
+        bool done = headturn(90);
+        if (done)
+        {
+          float x, y, th;
+          chassis_get_pose(&x, &y, &th);
+          chassis_uart_log("[task] return done, pose(%.1f, %.1f, %.1f) \r\n", x, y, th);
+          state = STATE_MOVE3;
+        }
+        break;
+      }
+      case STATE_MOVE3:
+      {
+        /* 前进至 (0, 0) */
+        bool arrived = move_to_coordinate(0.0f, 390.0f);
+        if (arrived)
+        {
+          float x, y, th;
+          chassis_get_pose(&x, &y, &th);
+          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+          state = STATE_MOVE4;
+        }
+        break;
+      }
+      case STATE_MOVE4:
+      {
+        /* 前进至 (0, 0) */
+        bool arrived = move_to_coordinate(0.0f, 120.0f);
+        if (arrived)
+        {
+          float x, y, th;
+          chassis_get_pose(&x, &y, &th);
+          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+          state = STATE_CALIBRATE2;
+        }
+        break;
+      }
+
+      case STATE_CALIBRATE2:
+      {
+        /* 在原点用摄像头校准坐标 (十字地标世界坐标假定为原点) */
+        bool ok = camera_align_at(0.0f, 0.0f, 90.0f, 1000);
+        int16_t ldx, ldy; uint8_t lstat;
+        camera_align_get_last_raw(&ldx, &ldy, &lstat);
+        float nx, ny, nth;
+        chassis_get_pose(&nx, &ny, &nth);
+        chassis_uart_log("[task] calibrate  ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n", ok, lstat, ldx, ldy, nx, ny, nth);
+        
+        state = STATE_MOVE2;
+        break;
+      }
+      case STATE_MOVE5:
+      {
+        /* 前进至 (0, 0) */
+        bool arrived = move_to_coordinate(0.0f, 0.0f);
+        if (arrived)
+        {
+          float x, y, th;
+          chassis_get_pose(&x, &y, &th);
+          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+          state = STATE_CALIBRATE3;
+        }
+        break;
+      }
+      case STATE_CALIBRATE3:
+      {
+        /* 在原点用摄像头校准坐标 (十字地标世界坐标假定为原点) */
+        bool ok = camera_align_at(0.0f, 0.0f, 90.0f, 1000);
+        int16_t ldx, ldy; uint8_t lstat;
+        camera_align_get_last_raw(&ldx, &ldy, &lstat);
+        float nx, ny, nth;
+        chassis_get_pose(&nx, &ny, &nth);
+        chassis_uart_log("[task] calibrate  ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n", ok, lstat, ldx, ldy, nx, ny, nth);
+        
+        state = STATE_MOVE6;
+        break;
+      }
+      case STATE_MOVE6:
+      {
+        /* 前进至 (0, 0) */
+        bool arrived = move_to_coordinate(0.0f, 0.0f);
+        if (arrived)
+        {
+          float x, y, th;
+          chassis_get_pose(&x, &y, &th);
+          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+          state = STATE_CALIBRATE3;
+        }
+        break;
+      }
+      
+    }
+    /* 每 100ms 打印位姿与 4 轮目标线速度 (上位机观察) */
+    
+
+    osDelay(10);  /* 10ms 轮询节拍 */
   }
   /* USER CODE END StartDefaultTask */
 }

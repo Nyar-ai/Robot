@@ -95,9 +95,9 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
     if (g_cam_tx_sem == NULL || g_cam_rx_sem == NULL) return false;
     if (timeout_ms == 0) timeout_ms = CAM_DEFAULT_TIMEOUT_MS;
 
-    /* 清空信号量(防止上一次残留) */
-    xSemaphoreTake(g_cam_tx_sem, 0);
-    xSemaphoreTake(g_cam_rx_sem, 0);
+    /* 清空信号量(防止上一次残留, 循环清空确保无累积) */
+    while (xSemaphoreTake(g_cam_tx_sem, 0) == pdTRUE);
+    while (xSemaphoreTake(g_cam_rx_sem, 0) == pdTRUE);
 
     /* ---- 1. 组请求帧 ---- */
     g_tx_buf[0] = CAM_FRAME_SOF0;
@@ -128,9 +128,11 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
     if (xSemaphoreTake(g_cam_tx_sem, pdMS_TO_TICKS(100)) != pdTRUE) {
         g_tx_busy = false;
         g_rx_busy = false;
-        /* 发送超时, 强制中止, 释放 UART 状态 */
+        /* 发送超时, 中止 DMA 传输, 并清除 UART 残留错误标志,
+         * 防止 HAL 因 ORE/FE/NE 未清除而在 Abort 内部卡死 */
         HAL_UART_AbortTransmit(&huart2);
         HAL_UART_AbortReceive(&huart2);
+        __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_ORE | UART_FLAG_FE | UART_FLAG_NE | UART_FLAG_PE);
         return false;
     }
     g_tx_busy = false;
@@ -139,7 +141,9 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
     bool rx_ok = (xSemaphoreTake(g_cam_rx_sem, pdMS_TO_TICKS(timeout_ms)) == pdTRUE);
     g_rx_busy = false;
     if (!rx_ok) {
+        /* 接收超时, 中止 DMA 并清除 UART 残留错误标志 */
         HAL_UART_AbortReceive(&huart2);
+        __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_ORE | UART_FLAG_FE | UART_FLAG_NE | UART_FLAG_PE);
         return false;
     }
 
@@ -217,19 +221,27 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
 }
 
-/* UART 错误(帧错/过冲/噪声等): 清错误标志, 必要时中止并重启接收.
- * 防止一次错误把 UART 永久卡住. */
+/* UART 错误(帧错/过冲/噪声等): 先清除硬件错误标志, 再释放信号量唤醒上层处理.
+ * 关键: 必须先清除 ORE/FE/NE/PE 标志再释放信号量, 否则上层 Abort 时
+ *       HAL 内部可能因检测到未清除的错误标志而陷入死循环. */
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART2) {
-        /* 错误发生时, 如果 RX 正在等, 给信号量让上层超时路径处理 */
+        /* 1. 先清除 UART 硬件错误标志, 防止后续 Abort 操作中 HAL 状态机卡死 */
+        __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_ORE | UART_FLAG_FE | UART_FLAG_NE | UART_FLAG_PE);
+
+        /* 2. 释放信号量唤醒上层任务, 让它走超时/重试路径 */
         BaseType_t hpw = pdFALSE;
+        bool woke = false;
         if (g_rx_busy && g_cam_rx_sem != NULL) {
             xSemaphoreGiveFromISR(g_cam_rx_sem, &hpw);
-            portYIELD_FROM_ISR(hpw);
+            woke = true;
         }
         if (g_tx_busy && g_cam_tx_sem != NULL) {
             xSemaphoreGiveFromISR(g_cam_tx_sem, &hpw);
+            woke = true;
+        }
+        if (woke) {
             portYIELD_FROM_ISR(hpw);
         }
     }

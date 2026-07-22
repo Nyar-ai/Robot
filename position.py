@@ -48,13 +48,13 @@ def init_display():
 
 
 def init_uart():
-    # 配置 UART3 引脚: 丝印T=GPIO50(TX), 丝印R=GPIO51(RX)
+    # 配置 UART2 引脚: 丝印T=GPIO11(TX), 丝印R=GPIO12(RX)
     fpioa = FPIOA()
-    fpioa.set_function(50, FPIOA.UART3_TXD)
-    fpioa.set_function(51, FPIOA.UART3_RXD)
-    uart = UART(UART.UART3, baudrate=115200,
+    fpioa.set_function(11, FPIOA.UART2_TXD)
+    fpioa.set_function(12, FPIOA.UART2_RXD)
+    uart = UART(UART.UART2, baudrate=115200,
                 bits=UART.EIGHTBITS, parity=UART.PARITY_NONE, stop=UART.STOPBITS_ONE)
-    print("[UART] UART3 init ok: GPIO50(TX), GPIO51(RX), 115200 8N1")
+    print("[UART] UART2 init ok: GPIO11(TX), GPIO12(RX), 115200 8N1")
     return uart
 
 
