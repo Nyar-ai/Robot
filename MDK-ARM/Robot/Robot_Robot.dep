@@ -69,8 +69,8 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h)(0x6A1BE26C)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A1BE26C)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A1BE26C)
 I (D:\kail5\ARM\ARMCC\include\math.h)(0x5E8E3CC2)
-F (../Core/Src/stepper.c)(0x6A55B4FA)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Robot-ID:\kail5\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\Include-D__UVISION_VERSION="539" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o robot\stepper.o --omf_browse robot\stepper.crf --depend robot\stepper.d)
-I (../Core/Inc/stepper.h)(0x6A57753B)
+F (../Core/Src/stepper.c)(0x6A61DB64)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Robot-ID:\kail5\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\Include-D__UVISION_VERSION="539" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o robot\stepper.o --omf_browse robot\stepper.crf --depend robot\stepper.d)
+I (../Core/Inc/stepper.h)(0x6A61DB4A)
 I (D:\kail5\ARM\ARMCC\include\stdint.h)(0x5E8E3CC2)
 I (D:\kail5\ARM\ARMCC\include\stdbool.h)(0x5E8E3CC2)
 I (D:\kail5\ARM\ARMCC\include\stddef.h)(0x5E8E3CC2)
@@ -242,7 +242,7 @@ I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h)(0x6A1BE2D0)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h)(0x6A1BE2D0)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h)(0x6A1BE2D0)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h)(0x6A1BE2D0)
-F (../Core/Src/freertos.c)(0x6A61BCB5)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Robot-ID:\kail5\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\Include-D__UVISION_VERSION="539" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o robot\freertos.o --omf_browse robot\freertos.crf --depend robot\freertos.d)
+F (../Core/Src/freertos.c)(0x6A61DBE2)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Robot-ID:\kail5\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\Include-D__UVISION_VERSION="539" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o robot\freertos.o --omf_browse robot\freertos.crf --depend robot\freertos.d)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A1BE26C)
 I (D:\kail5\ARM\ARMCC\include\stddef.h)(0x5E8E3CC2)
 I (D:\kail5\ARM\ARMCC\include\stdint.h)(0x5E8E3CC2)
@@ -289,7 +289,8 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h)(0x6A1BE2
 I (../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h)(0x6A1BE26C)
 I (../Core/Inc/chassis.h)(0x6A5CA3FA)
 I (D:\kail5\ARM\ARMCC\include\stdbool.h)(0x5E8E3CC2)
-I (../Core/Inc/stepper.h)(0x6A57753B)
+I (../Core/Inc/clamp.h)(0x6A61DB83)
+I (../Core/Inc/stepper.h)(0x6A61DB4A)
 I (../Core/Inc/mecanum.h)(0x6A60AE53)
 I (../Core/Inc/mpu6050.h)(0x6A618C61)
 I (../Core/Inc/usart.h)(0x6A559F8F)
@@ -577,6 +578,15 @@ I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h)(0x6A1BE2D0)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h)(0x6A1BE2D0)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h)(0x6A1BE2D0)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h)(0x6A1BE2D0)
+F (..\Core\Src\clamp.c)(0x6A61DB9D)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Robot-ID:\kail5\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\Include-D__UVISION_VERSION="539" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o robot\clamp.o --omf_browse robot\clamp.crf --depend robot\clamp.d)
+I (../Core/Inc/clamp.h)(0x6A61DB83)
+I (D:\kail5\ARM\ARMCC\include\stdint.h)(0x5E8E3CC2)
+I (D:\kail5\ARM\ARMCC\include\stdbool.h)(0x5E8E3CC2)
+I (D:\kail5\ARM\ARMCC\include\stddef.h)(0x5E8E3CC2)
+I (../Core/Inc/scurve.h)(0x6A57713A)
+I (../Core/Inc/stepper.h)(0x6A61DB4A)
+I (../Core/Inc/mecanum.h)(0x6A60AE53)
+I (D:\kail5\ARM\ARMCC\include\math.h)(0x5E8E3CC2)
 F (../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c)(0x6A1BE2D0)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Robot-ID:\kail5\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\Include-D__UVISION_VERSION="539" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o robot\stm32f4xx_hal_tim.o --omf_browse robot\stm32f4xx_hal_tim.crf --depend robot\stm32f4xx_hal_tim.d)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h)(0x6A1BE2D0)
 I (../Core/Inc/stm32f4xx_hal_conf.h)(0x6A559F8F)
@@ -1171,7 +1181,7 @@ I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h)(0x6A1BE2D0)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h)(0x6A1BE2D0)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h)(0x6A1BE2D0)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h)(0x6A1BE2D0)
-F (../Core/Src/system_stm32f4xx.c)(0x6A559F8F)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Robot-ID:\kail5\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\Include-D__UVISION_VERSION="539" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o robot\system_stm32f4xx.o --omf_browse robot\system_stm32f4xx.crf --depend robot\system_stm32f4xx.d)
+F (../Core/Src/system_stm32f4xx.c)(0x6A559F8F)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Robot-ID:\kail5\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\Include-D__UVISION_VERSION="539" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o robot\system_stm32f4xx_1.o --omf_browse robot\system_stm32f4xx_1.crf --depend robot\system_stm32f4xx_1.d)
 I (../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h)(0x6A1BE2D0)
 I (../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h)(0x6A1BE2D0)
 I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A1BE2D0)

@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "chassis.h"
+#include "clamp.h"
 #include "stepper.h"
 #include "mpu6050.h"
 #include "usart.h"
@@ -71,6 +72,14 @@ const osThreadAttr_t gyroTask_attributes = {
     .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityHigh,
 };
+
+/* 夹具控制任务(带轮步进电机梯形加减速 1ms 控制环) */
+osThreadId_t clampTaskHandle;
+const osThreadAttr_t clampTask_attributes = {
+    .name = "clampTask",
+    .stack_size = 512 * 4,
+    .priority = (osPriority_t)osPriorityAboveNormal,
+};
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -84,6 +93,7 @@ const osThreadAttr_t defaultTask_attributes = {
 /* USER CODE BEGIN FunctionPrototypes */
 void StartChassisTask(void *argument);
 void StartGyroTask(void *argument);
+void StartClampTask(void *argument);
 static void chassis_uart_log(const char *fmt, ...);
 
 /* I2C DMA 完成信号量(gyroTask 与 DMA 中断同步用) */
@@ -103,7 +113,8 @@ void MX_FREERTOS_Init(void)
 {
   /* USER CODE BEGIN Init */
   chassis_init();
-  Stepper_Init();      /* 配置 4 个步进定时器(Prescaler/ARR/占空比), 不立即转 */
+  clamp_init();        /* 夹具控制层(带轮步进电机 S 曲线规划器) */
+  Stepper_Init();      /* 配置 5 个步进定时器(Prescaler/ARR/占空比), 不立即转 */
   camera_align_init(); /* 摄像头地标校准模块(USART2 + DMA + 信号量) */
   /* MPU6050 初始化放在 gyroTask 里(因为它需要 HAL_Delay, 不能在内核启动前调) */
   /* USER CODE END Init */
@@ -131,6 +142,7 @@ void MX_FREERTOS_Init(void)
   /* USER CODE BEGIN RTOS_THREADS */
   chassisTaskHandle = osThreadNew(StartChassisTask, NULL, &chassisTask_attributes);
   gyroTaskHandle = osThreadNew(StartGyroTask, NULL, &gyroTask_attributes);
+  clampTaskHandle = osThreadNew(StartClampTask, NULL, &clampTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -439,6 +451,21 @@ void StartChassisTask(void *argument)
     float w[4];
     chassis_get_wheel_speed(w);
     Stepper_SetWheelSpeedAll(w);
+
+    vTaskDelayUntil(&last, pdMS_TO_TICKS(1)); /* 严格 1ms */
+  }
+}
+
+/* 夹具 1ms 控制层: 梯形 S 曲线 + 高度步进电机 PWM.
+ * 对标 chassisTask, 严格 1ms 节拍, 绝不做阻塞操作. */
+void StartClampTask(void *argument)
+{
+  (void)argument;
+  TickType_t last = xTaskGetTickCount();
+
+  for (;;)
+  {
+    clamp_tick(); /* 推进夹具状态机(内部 dt=1ms) */
 
     vTaskDelayUntil(&last, pdMS_TO_TICKS(1)); /* 严格 1ms */
   }

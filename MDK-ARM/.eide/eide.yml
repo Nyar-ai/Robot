@@ -38,6 +38,7 @@ virtualFolder:
                 - path: ../Core/Src/mpu6050.c
                 - path: ../Core/Src/system_stm32f4xx.c
                 - path: ../Core/Src/camera_align.c
+                - path: ../Core/Src/clamp.c
               folders: []
     - name: Drivers
       files: []

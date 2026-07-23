@@ -46,6 +46,7 @@ robot\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis
 robot\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 robot\freertos.o: ../Core/Inc/chassis.h
 robot\freertos.o: D:\kail5\ARM\ARMCC\Bin\..\include\stdbool.h
+robot\freertos.o: ../Core/Inc/clamp.h
 robot\freertos.o: ../Core/Inc/stepper.h
 robot\freertos.o: ../Core/Inc/mecanum.h
 robot\freertos.o: ../Core/Inc/mpu6050.h

@@ -36,7 +36,8 @@
 #define STEPPER_M2   1   /* PD12/ TIM4_CH1 / DIR PE12 */
 #define STEPPER_M3   2   /* PC8 / TIM8_CH3 / DIR PB5  */
 #define STEPPER_M4   3   /* PE5 / TIM9_CH1 / DIR PD7  */
-#define STEPPER_NUM  4
+#define STEPPER_M5   4   /* PE14/ TIM1_CH4 / DIR PE15 */
+#define STEPPER_NUM  5
 
 /* ---- 步进电机参数(按你的实车/驱动板拨码改) ---- */
 #define STEPPER_STEPS_PER_REV      3200.0f   /* 200步/圈 × 16细分 = 3200 步/圈 */

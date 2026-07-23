@@ -35,6 +35,8 @@ static const Stepper_Bind s_bind[STEPPER_NUM] = {
     { &htim8, TIM_CHANNEL_3, GPIOB, GPIO_PIN_5,  1 },
     /* M4: PE5 / TIM9_CH1 / DIR PD7  */
     { &htim9, TIM_CHANNEL_1, GPIOD, GPIO_PIN_7,  0 },
+    /* M5: PE14/ TIM1_CH4 / DIR PE15 (TIM1 高级定时器, 需 MOE) */
+    { &htim1, TIM_CHANNEL_4, GPIOE, GPIO_PIN_15, 1 },
 };
 
 /* 每个电机上一次下发的速度(步/s, 带符号), 用于底层速度变化率限幅 */
@@ -70,10 +72,11 @@ void Stepper_Init(void)
 {
     /* 1) 统一各定时器工作频率到 1MHz
      *    TIM3/4 在 APB1, 时钟=84MHz  → Prescaler=83
-     *    TIM8/9 在 APB2, 时钟=168MHz → Prescaler=167
+     *    TIM1/8/9 在 APB2, 时钟=168MHz → Prescaler=167
      *    (注意: __HAL_TIM_SET_PRESCALER 写的是"除以(PSC+1)") */
     __HAL_TIM_SET_PRESCALER(&htim3, 83);
     __HAL_TIM_SET_PRESCALER(&htim4, 83);
+    __HAL_TIM_SET_PRESCALER(&htim1, 167);
     __HAL_TIM_SET_PRESCALER(&htim8, 167);
     __HAL_TIM_SET_PRESCALER(&htim9, 167);
 

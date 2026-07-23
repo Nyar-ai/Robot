@@ -1,0 +1,9 @@
+robot\clamp.o: ..\Core\Src\clamp.c
+robot\clamp.o: ../Core/Inc/clamp.h
+robot\clamp.o: D:\kail5\ARM\ARMCC\Bin\..\include\stdint.h
+robot\clamp.o: D:\kail5\ARM\ARMCC\Bin\..\include\stdbool.h
+robot\clamp.o: D:\kail5\ARM\ARMCC\Bin\..\include\stddef.h
+robot\clamp.o: ../Core/Inc/scurve.h
+robot\clamp.o: ../Core/Inc/stepper.h
+robot\clamp.o: ../Core/Inc/mecanum.h
+robot\clamp.o: D:\kail5\ARM\ARMCC\Bin\..\include\math.h
