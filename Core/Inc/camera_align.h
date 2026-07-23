@@ -25,6 +25,22 @@
  * 注意: 本模块所有阻塞操作均通过 FreeRTOS 信号量挂起任务, 不占用 CPU,
  *       不会干扰 1ms 控制环(chassisTask/gyroTask).
  */
+/*
+调用示例：
+case STATE_CALIBRATE3:
+      {
+        
+        bool ok = camera_align_at(0.0f,0.0f,0.0f, 1000);
+        int16_t ldx, ldy; uint8_t lstat;
+        camera_align_get_last_raw(&ldx, &ldy, &lstat);
+        float nx, ny, nth;
+        chassis_get_pose(&nx, &ny, &nth);
+        chassis_uart_log("[task] calibrate  ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n", ok, lstat, ldx, ldy, nx, ny, nth);
+        
+        state = STATE_MOVE5;
+        break;
+      }
+*/
 #ifndef __CAMERA_ALIGN_H
 #define __CAMERA_ALIGN_H
 

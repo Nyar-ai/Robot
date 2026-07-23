@@ -61,7 +61,7 @@
 /* 1) DLPF 降噪 + 1kHz 采样匹配: DLPF_CFG=3→带宽44Hz/延迟4.9ms, 0=关闭(5.1kHz,噪声大) */
 #define MPU6050_DLPF_CFG            3
 /* 2) 死区: |角速度|<此值视为0, 掐断残余零漂的纯积分(deg/s) */
-#define MPU6050_DEADZONE_DPS        0.5f
+#define MPU6050_DEADZONE_DPS        0.3f
 /* 3) 校准: 预热丢弃样本数 + 采样缓冲上限(静态分配, 避免占栈) */
 #define MPU6050_CALIB_WARMUP        200
 #define MPU6050_CALIB_BUF           256

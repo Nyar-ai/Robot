@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * File Name          : freertos.c
-  * Description        : Code for freertos applications
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : freertos.c
+ * Description        : Code for freertos applications
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2026 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -57,9 +57,9 @@
 /* USER CODE BEGIN Variables */
 osThreadId_t chassisTaskHandle;
 const osThreadAttr_t chassisTask_attributes = {
-  .name = "chassisTask",
-  .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityAboveNormal,
+    .name = "chassisTask",
+    .stack_size = 512 * 4,
+    .priority = (osPriority_t)osPriorityAboveNormal,
 };
 
 /* 陀螺仪任务(DMA 异步读取 + yaw 积分 + 注入 chassis).
@@ -67,17 +67,17 @@ const osThreadAttr_t chassisTask_attributes = {
  * 不会抢占 chassisTask 的 1ms 控制环. */
 osThreadId_t gyroTaskHandle;
 const osThreadAttr_t gyroTask_attributes = {
-  .name = "gyroTask",
-  .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityHigh,
+    .name = "gyroTask",
+    .stack_size = 512 * 4,
+    .priority = (osPriority_t)osPriorityHigh,
 };
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "defaultTask",
+    .stack_size = 128 * 4,
+    .priority = (osPriority_t)osPriorityNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,15 +95,16 @@ void StartDefaultTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
-void MX_FREERTOS_Init(void) {
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
+void MX_FREERTOS_Init(void)
+{
   /* USER CODE BEGIN Init */
   chassis_init();
-  Stepper_Init();          /* 配置 4 个步进定时器(Prescaler/ARR/占空比), 不立即转 */
-  camera_align_init();     /* 摄像头地标校准模块(USART2 + DMA + 信号量) */
+  Stepper_Init();      /* 配置 4 个步进定时器(Prescaler/ARR/占空比), 不立即转 */
+  camera_align_init(); /* 摄像头地标校准模块(USART2 + DMA + 信号量) */
   /* MPU6050 初始化放在 gyroTask 里(因为它需要 HAL_Delay, 不能在内核启动前调) */
   /* USER CODE END Init */
 
@@ -129,21 +130,20 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   chassisTaskHandle = osThreadNew(StartChassisTask, NULL, &chassisTask_attributes);
-  gyroTaskHandle    = osThreadNew(StartGyroTask,    NULL, &gyroTask_attributes);
+  gyroTaskHandle = osThreadNew(StartGyroTask, NULL, &gyroTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
-
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
+ * @brief  Function implementing the defaultTask thread.
+ * @param  argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
@@ -158,151 +158,188 @@ void StartDefaultTask(void *argument)
    */
   (void)argument;
 
-  enum { STATE_MOVE1,STATE_CALIBRATE1,STATE_MOVE2,STATE_TURN1,STATE_MOVE3,STATE_MOVE4,STATE_CALIBRATE2,STATE_MOVE5,STATE_CALIBRATE3,STATE_MOVE6} state = STATE_MOVE1;
+  enum
+  {
+    STATE_MOVE1,
+    STATE_CALIBRATE1,
+    STATE_MOVE2, // 第一次去中心点
+    STATE_TURN1,
+    STATE_MOVE3,
+    STATE_MOVE4,
+    STATE_CALIBRATE2,
+    STATE_MOVE5, // 去A近点，回到原点
+    STATE_TURN2,
+    STATE_MOVE6,
+    STATE_CALIBRATE3,
+    STATE_MOVE7,
+    STATE_MOVE8,
+    STATE_TURN3,
+    DS_DONE
+  } state = STATE_MOVE1;
   chassis_uart_log("\r\n[task] auto-cycle start: forward 500mm -> return -> calibrate -> loop\r\n");
-  chassis_set_pose(0, -780, 0);
+  chassis_set_pose(-780, 0, 0);
   chassis_uart_log("\r\n[task] set pose to (0, 950, 0)\r\n");
   for (;;)
   {
     switch (state)
     {
-      case STATE_MOVE1:
+    case STATE_MOVE1:
+    {
+      /* 前进至 (0, 0) */
+      bool arrived = move_to_coordinate(125.0f, 0.0f);
+      if (arrived)
       {
-        /* 前进至 (0, 0) */
-        bool arrived = move_to_coordinate(120.0f, 0.0f);
-        if (arrived)
-        {
-          float x, y, th;
-          chassis_get_pose(&x, &y, &th);
-          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
-          state = STATE_CALIBRATE1;
-        }
-        break;
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+        state = STATE_CALIBRATE3;
       }
-      case STATE_CALIBRATE1:
-      {
-        /* 在原点用摄像头校准坐标 (十字地标世界坐标假定为原点) */
-        bool ok = camera_align_at(0.0f, 0.0f, 0.0f, 1000);
-        int16_t ldx, ldy; uint8_t lstat;
-        camera_align_get_last_raw(&ldx, &ldy, &lstat);
-        float nx, ny, nth;
-        chassis_get_pose(&nx, &ny, &nth);
-        chassis_uart_log("[task] calibrate  ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n", ok, lstat, ldx, ldy, nx, ny, nth);
-        
-        state = STATE_MOVE2;
-        break;
-      }
-      case STATE_MOVE2:
-      {
-        /* 前进至 (0, 0) */
-        bool arrived = move_to_coordinate(0.0f, 0.0f);
-        if (arrived)
-        {
-          float x, y, th;
-          chassis_get_pose(&x, &y, &th);
-          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
-          state = STATE_TURN1;
-        }
-        break;
-      }
-      case STATE_TURN1:
-      {
-        /* 回到原点 (0, 0) */
-        bool done = headturn(90);
-        if (done)
-        {
-          float x, y, th;
-          chassis_get_pose(&x, &y, &th);
-          chassis_uart_log("[task] return done, pose(%.1f, %.1f, %.1f) \r\n", x, y, th);
-          state = STATE_MOVE3;
-        }
-        break;
-      }
-      case STATE_MOVE3:
-      {
-        /* 前进至 (0, 0) */
-        bool arrived = move_to_coordinate(0.0f, 390.0f);
-        if (arrived)
-        {
-          float x, y, th;
-          chassis_get_pose(&x, &y, &th);
-          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
-          state = STATE_MOVE4;
-        }
-        break;
-      }
-      case STATE_MOVE4:
-      {
-        /* 前进至 (0, 0) */
-        bool arrived = move_to_coordinate(0.0f, 120.0f);
-        if (arrived)
-        {
-          float x, y, th;
-          chassis_get_pose(&x, &y, &th);
-          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
-          state = STATE_CALIBRATE2;
-        }
-        break;
-      }
+      break;
+    }
+    case STATE_CALIBRATE3:
+    {
 
-      case STATE_CALIBRATE2:
+      bool ok = camera_align_at(0.0f, 0.0f, 0.0f, 1000);
+      int16_t ldx, ldy;
+      uint8_t lstat;
+      camera_align_get_last_raw(&ldx, &ldy, &lstat);
+      float nx, ny, nth;
+      chassis_get_pose(&nx, &ny, &nth);
+      chassis_uart_log("[task] calibrate  ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n", ok, lstat, ldx, ldy, nx, ny, nth);
+
+      state = STATE_MOVE8;
+      break;
+    }
+    case STATE_MOVE8:
+    {
+      /* 前进至 (0, 0) */
+      bool arrived = move_to_coordinate(0.0f, 0.0f);
+      if (arrived)
       {
-        /* 在原点用摄像头校准坐标 (十字地标世界坐标假定为原点) */
-        bool ok = camera_align_at(0.0f, 0.0f, 90.0f, 1000);
-        int16_t ldx, ldy; uint8_t lstat;
-        camera_align_get_last_raw(&ldx, &ldy, &lstat);
-        float nx, ny, nth;
-        chassis_get_pose(&nx, &ny, &nth);
-        chassis_uart_log("[task] calibrate  ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n", ok, lstat, ldx, ldy, nx, ny, nth);
-        
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+        state = STATE_TURN1;
+      }
+      break;
+    }
+    case STATE_TURN1:
+    {
+      bool done = headturn(90);
+      if (done)
+      {
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] turn1 done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
         state = STATE_MOVE2;
-        break;
       }
-      case STATE_MOVE5:
+      break;
+    }
+    case STATE_MOVE2:
+    {
+      bool arrive = move_to_coordinate(0, 390);
+      if (arrive)
       {
-        /* 前进至 (0, 0) */
-        bool arrived = move_to_coordinate(0.0f, 0.0f);
-        if (arrived)
-        {
-          float x, y, th;
-          chassis_get_pose(&x, &y, &th);
-          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
-          state = STATE_CALIBRATE3;
-        }
-        break;
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+        state = STATE_MOVE3;
       }
-      case STATE_CALIBRATE3:
+      break;
+    }
+    case STATE_MOVE3:
+    {
+      bool arrived = move_to_coordinate(0.0f, 0.0f);
+      if (arrived)
       {
-        /* 在原点用摄像头校准坐标 (十字地标世界坐标假定为原点) */
-        bool ok = camera_align_at(0.0f, 0.0f, 90.0f, 1000);
-        int16_t ldx, ldy; uint8_t lstat;
-        camera_align_get_last_raw(&ldx, &ldy, &lstat);
-        float nx, ny, nth;
-        chassis_get_pose(&nx, &ny, &nth);
-        chassis_uart_log("[task] calibrate  ok=%d stat=%d dxdy=(%d,%d)px pose(%.1f,%.1f,%.1f)\r\n", ok, lstat, ldx, ldy, nx, ny, nth);
-        
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+        state = STATE_TURN2;
+      }
+      break;
+    }
+    case STATE_TURN2:
+    {
+      bool done = headturn(0);
+      if (done)
+      {
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] turn1 done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+        state = STATE_MOVE4;
+      }
+      break;
+    }
+    case STATE_MOVE4:
+    {
+      bool arrived = move_to_coordinate(390, 0);
+      if (arrived)
+      {
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+        state = STATE_MOVE5;
+      }
+      break;
+    }
+
+    case STATE_MOVE5:
+    {
+      bool arrived = move_to_coordinate(0, 0);
+      if (arrived)
+      {
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+        state = STATE_TURN3;
+      }
+      break;
+    }
+    case STATE_TURN3:
+    {
+      bool done = headturn(-90);
+      if (done)
+      {
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] turn1 done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
         state = STATE_MOVE6;
-        break;
       }
-      case STATE_MOVE6:
+      break;
+    }
+    case STATE_MOVE6:
+    {
+      bool arrived = move_to_coordinate(0, -390);
+      if (arrived)
       {
-        /* 前进至 (0, 0) */
-        bool arrived = move_to_coordinate(0.0f, 0.0f);
-        if (arrived)
-        {
-          float x, y, th;
-          chassis_get_pose(&x, &y, &th);
-          chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
-          state = STATE_CALIBRATE3;
-        }
-        break;
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+        state = STATE_MOVE7;
       }
-      
+      break;
+    }
+    case STATE_MOVE7:
+    {
+      bool arrived = move_to_coordinate(0, 0);
+      if (arrived)
+      {
+        float x, y, th;
+        chassis_get_pose(&x, &y, &th);
+        chassis_uart_log("[task] forward done, pose(%.1f, %.1f, %.1f) -> returning\r\n", x, y, th);
+        state = DS_DONE;
+      }
+      break;
+    }
+
+    case DS_DONE:
+    default:
+      break;
     }
     /* 每 100ms 打印位姿与 4 轮目标线速度 (上位机观察) */
-    
 
-    osDelay(10);  /* 10ms 轮询节拍 */
+    osDelay(10); /* 10ms 轮询节拍 */
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -320,10 +357,14 @@ void StartGyroTask(void *argument)
 
   /* 初始化 MPU6050(此时调度器已启动, 可安全用 HAL_Delay) */
   uint8_t ret = MPU6050_Init();
-  if (ret != 0) {
+  if (ret != 0)
+  {
     chassis_uart_log("[gyro] MPU6050 init failed, code=%d (run on odom only)\r\n", ret);
     /* 初始化失败不进循环, 但 chassis 会自动退化用里程计 θ */
-    for (;;) { osDelay(1000); }
+    for (;;)
+    {
+      osDelay(1000);
+    }
   }
   chassis_uart_log("[gyro] MPU6050 init ok, calibrating yaw bias (keep still)...\r\n");
 
@@ -336,13 +377,15 @@ void StartGyroTask(void *argument)
 
   /* 创建 DMA 完成信号量 */
   g_i2c_dma_sem = xSemaphoreCreateBinary();
-  if (g_i2c_dma_sem == NULL) {
+  if (g_i2c_dma_sem == NULL)
+  {
     chassis_uart_log("[gyro] sem create failed\r\n");
-    for (;;) osDelay(1000);
+    for (;;)
+      osDelay(1000);
   }
 
   TickType_t last = xTaskGetTickCount();
-  const float dt = 0.001f;   /* 1ms 节拍, 与 chassis_tick 一致 */
+  const float dt = 0.001f; /* 1ms 节拍, 与 chassis_tick 一致 */
 
   for (;;)
   {
@@ -368,10 +411,12 @@ void StartGyroTask(void *argument)
  * 这里解析数据 + 释放信号量唤醒 gyroTask. 注意: 运行在中断上下文, 要简短. */
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  if (hi2c->Instance == I2C1) {
-    MPU6050_OnDMAComplete();   /* 解析数据 + 置完成标志 */
+  if (hi2c->Instance == I2C1)
+  {
+    MPU6050_OnDMAComplete(); /* 解析数据 + 置完成标志 */
     BaseType_t hpw = pdFALSE;
-    if (g_i2c_dma_sem != NULL) {
+    if (g_i2c_dma_sem != NULL)
+    {
       xSemaphoreGiveFromISR(g_i2c_dma_sem, &hpw);
       portYIELD_FROM_ISR(hpw);
     }
@@ -388,14 +433,14 @@ void StartChassisTask(void *argument)
 
   for (;;)
   {
-    chassis_tick();                       /* 推进底盘状态机(内部 dt=1ms) */
+    chassis_tick(); /* 推进底盘状态机(内部 dt=1ms) */
 
     /* 把 chassis 算出的 4 轮目标线速度(mm/s) 下发给步进电机层 */
     float w[4];
     chassis_get_wheel_speed(w);
     Stepper_SetWheelSpeedAll(w);
 
-    vTaskDelayUntil(&last, pdMS_TO_TICKS(1));  /* 严格 1ms */
+    vTaskDelayUntil(&last, pdMS_TO_TICKS(1)); /* 严格 1ms */
   }
 }
 
@@ -410,10 +455,10 @@ static void chassis_uart_log(const char *fmt, ...)
   va_end(ap);
   if (n > 0)
   {
-    if (n > (int)sizeof(buf)) n = (int)sizeof(buf);
+    if (n > (int)sizeof(buf))
+      n = (int)sizeof(buf);
     HAL_UART_Transmit(&huart1, (uint8_t *)buf, (uint16_t)n, 50);
   }
 }
 
 /* USER CODE END Application */
-

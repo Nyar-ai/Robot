@@ -27,7 +27,20 @@ Project File Date:  07/21/2026
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'D:\kail5\ARM\ARMCC\Bin'
 Build target 'Robot'
-"Robot\Robot.axf" - 0 Error(s), 0 Warning(s).
+compiling freertos.c...
+../Core/Inc/chassis.h(127): warning:  #1-D: last line of file ends without a newline
+  #endif /* __CHASSIS_H */
+../Core/Inc/mecanum.h(65): warning:  #1-D: last line of file ends without a newline
+  #endif /* __MECANUM_H */
+../Core/Inc/stepper.h(96): warning:  #1-D: last line of file ends without a newline
+  #endif /* __STEPPER_H */
+../Core/Inc/camera_align.h(123): warning:  #1-D: last line of file ends without a newline
+  #endif /* __CAMERA_ALIGN_H */
+../Core/Src/freertos.c: 4 warnings, 0 errors
+linking...
+Program Size: Code=41600 RO-data=1496 RW-data=264 ZI-data=24576  
+FromELF: creating hex file...
+"Robot\Robot.axf" - 0 Error(s), 4 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -50,7 +63,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE@5.6.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>
