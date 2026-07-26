@@ -23,7 +23,7 @@
 #include <stddef.h>   /* NULL (ARMCC 5 不自动引入) */
 
 /* ---- 到达阈值 ---- */
-#define CHASSIS_POS_TOL_MM        0.05f    /* 位置到达阈值(mm)   */
+#define CHASSIS_POS_TOL_MM        3.0f     /* 位置到达阈值(mm)   */
 #define CHASSIS_ANG_TOL_DEG       0.05f    /* 角度到达阈值(deg)  */
          
 /* ---- 默认梯形曲线参数(平移, 量纲 mm) —— 对齐 project 3 参数模型 ----
@@ -32,7 +32,7 @@
  * MIN_SPEED: 启动起步速度, 跳过低速死区(对应 project 的 MinStartSpeed) */
 #define CHASSIS_TRANS_MAX_SPEED   200.0f    /* mm/s   */
 #define CHASSIS_TRANS_MAX_ACCEL   100.0f    /* mm/s^2 */
-#define CHASSIS_TRANS_MIN_SPEED   25.0f     /* mm/s   (启动起步速度, 跳过电机死区≈0.94) */
+#define CHASSIS_TRANS_MIN_SPEED   10.0f     /* mm/s   (启动起步速度, 跳过电机死区≈0.94) */
 
 /* ---- 默认梯形曲线参数(旋转, 量纲 deg) —— 对齐 project 3 参数模型 ---- */
 #define CHASSIS_ROT_MAX_SPEED     90.0f    /* deg/s   */
@@ -42,11 +42,15 @@
 /* ---- 控制周期 ---- */
 #define CHASSIS_TICK_DT_S         0.001f    /* chassis_tick 步长 1ms */
 
+// ---- 里程计标定系数 (用实际距离/理论距离实测后填入, 1.0=不补偿) ----
+
+#define CHASSIS_ODOM_SCALE  1.0f
+
 // ---- 偏航角修正 PID 参数 (平移过程中锁定航向用) ----
 
-#define CHASSIS_YAW_KP            3.0f
-#define CHASSIS_YAW_KI            0.0f
-#define CHASSIS_YAW_KD            0.0003f
+#define CHASSIS_YAW_KP            2.0f
+#define CHASSIS_YAW_KI            0.03f
+#define CHASSIS_YAW_KD            0.001f
 #define CHASSIS_YAW_IMAX          65.0f     /* 输出限幅 deg/s, 对齐1064的 vw≤65 */
 
 /**
@@ -123,5 +127,12 @@ void chassis_set_target_heading(float heading_deg);
  * @param kp/ki/kd/imax 对应 PID 参数和输出限幅, 0 表示保持原值
  */
 void chassis_set_yaw_pid(float kp, float ki, float kd, float imax);
+
+/**
+ * @brief 设置里程计标定系数 (实际距离 / 理论距离)
+ * @param scale 标定系数, 默认 1.0; < 1.0 表示实际走得短 (电机需多转)
+ * @note  用法: 命令走 1000mm → 实测 980mm → chassis_set_odom_scale(0.98f)
+ */
+void chassis_set_odom_scale(float scale);
 
 #endif /* __CHASSIS_H */

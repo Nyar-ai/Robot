@@ -79,6 +79,9 @@ typedef struct {
 
 static Chassis_t g_chassis;
 
+/* 里程计标定系数: 物理实际距离 / 理论命令距离 */
+static float g_odom_scale = CHASSIS_ODOM_SCALE;
+
 /* ---- 内部辅助 ----------------------------------------------------------- */
 
 /* 当前使用的航向角(deg): 优先陀螺仪, 否则里程计 */
@@ -269,7 +272,8 @@ bool move_to_coordinate(float tx, float ty)
             g_chassis.mode = CH_MODE_IDLE;
             g_chassis.arrived = true;
         } else {
-            Scurve_MoveTo(&g_chassis.trans_planner, d);
+            /* 里程计标定: 若 scale<1 则电机多转以补偿物理缩水 */
+            Scurve_MoveTo(&g_chassis.trans_planner, d / g_odom_scale);
             g_chassis.mode = CH_MODE_MOVING;
             g_chassis.arrived = false;
         }
@@ -345,13 +349,23 @@ void chassis_tick(void)
                 vx_b = vy_b = 0.0f;
                 omega = 0.0f;
                 yaw_pid_reset();
+            } else if (d < 20.0f) {
+                /* 残留误差 < 20mm: 比例速度平滑逼近(不做 S 曲线重规划, 避免震荡) */
+                float k = 8.0f;  /* 速度增益: 8(mm/s)/mm */
+                float v_close = d * k;
+                float vmin = CHASSIS_TRANS_MIN_SPEED;
+                if (v_close > vmin * 2.0f) v_close = vmin * 2.0f;
+                if (v_close < vmin)       v_close = vmin;
+                vx_b = v_close * cosf(g_chassis.trans_phi_rad);
+                vy_b = v_close * sinf(g_chassis.trans_phi_rad);
+                /* 偏航 PID 继续运行(保持航向) */
             } else {
-                /* 规划器已停但没到(积分漂移), 重新规划剩余距离 */
+                /* 误差较大(打滑/漂移), 重新规划剩余距离(补偿标定) */
                 float theta_rad = deg2rad(chassis_theta_deg());
                 float ebx =  ewx * cosf(theta_rad) + ewy * sinf(theta_rad);
                 float eby = -ewx * sinf(theta_rad) + ewy * cosf(theta_rad);
                 g_chassis.trans_phi_rad = atan2f(eby, ebx);
-                Scurve_MoveTo(&g_chassis.trans_planner, d);
+                Scurve_MoveTo(&g_chassis.trans_planner, d / g_odom_scale);
             }
         }
         break;
@@ -393,11 +407,18 @@ void chassis_tick(void)
     float theta_rad = deg2rad(chassis_theta_deg());
     float vx_w = vx_b * cosf(theta_rad) - vy_b * sinf(theta_rad);
     float vy_w = vx_b * sinf(theta_rad) + vy_b * cosf(theta_rad);
-    g_chassis.x += vx_w * dt;
-    g_chassis.y += vy_w * dt;
+    g_chassis.x += vx_w * dt * g_odom_scale;
+    g_chassis.y += vy_w * dt * g_odom_scale;
 
     /* θ: 有陀螺仪时不积分(由 chassis_feed_gyro 提供); 无陀螺仪时用 ω 积分 */
     if (!g_chassis.gyro_used) {
         g_chassis.theta_deg = normalize_angle_deg(g_chassis.theta_deg + rad2deg(omega) * dt);
+    }
+}
+
+void chassis_set_odom_scale(float scale)
+{
+    if (scale > 0.01f && scale < 100.0f) {
+        g_odom_scale = scale;
     }
 }
