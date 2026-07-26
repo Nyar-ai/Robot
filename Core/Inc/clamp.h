@@ -21,9 +21,9 @@
 #include <stddef.h>
 
 /* ---- 带轮步进电机参数 ---- */
-#define CLAMP_STEPS_PER_REV        3200.0f   /* 200步/圈 × 16细分 */
+#define CLAMP_STEPS_PER_REV        3200.0f   /* 200步/圈 x 16细分 */
 #define CLAMP_PULLEY_DIAMETER_MM   10.0f     /* 带轮节圆直径 mm */
-#define CLAMP_PULLEY_CIRCUM_MM     (3.14159265358979323846f * CLAMP_PULLEY_DIAMETER_MM)  /* 周长 ≈31.416mm */
+#define CLAMP_PULLEY_CIRCUM_MM     (3.14159265358979323846f * CLAMP_PULLEY_DIAMETER_MM)  /* 周长 ~31.416mm */
 
 /* ---- 到达阈值 ---- */
 #define CLAMP_HEIGHT_TOL_MM        0.05f     /* 高度到达阈值(mm) */
@@ -37,13 +37,13 @@
 #define CLAMP_TICK_DT_S            0.001f    /* clamp_tick 步长 1ms */
 
 /**
- * @brief 初始化夹具控制层(清空状态, 配置 S 曲线参数, 进入 IDLE)
+ * @brief 初始化夹具控制层(清空状态, 配置梯形曲线参数, 进入 IDLE)
  */
 void clamp_init(void);
 
 /**
  * @brief 1ms 周期推进(放 FreeRTOS clampTask 里调用)
- *        推进高度 S 曲线 → 下发给步进电机驱动层
+ *        推进高度梯形曲线 -> 下发给步进电机驱动层
  */
 void clamp_tick(void);
 
@@ -75,12 +75,20 @@ float clamp_get_height(void);
  */
 void clamp_set_height_now(float pos_mm);
 
-/* ================================================================
- * 后续扩展接口(舵机, 占空比控制, 无需 tick 推进)
- *   void clamp_gripper_open(void);          // 夹爪张开
- *   void clamp_gripper_close(void);         // 夹爪闭合
- *   void clamp_gripper_set(uint8_t angle);  // 夹爪精确角度
- *   void clamp_rotate_set(uint8_t angle);   // 夹具旋转角度
- * ================================================================ */
+/**
+ * @brief 夹爪张开 (固定角度 ~180deg)
+ */
+void clamp_gripper_open(void);
+
+/**
+ * @brief 夹爪闭合 (固定角度 ~0deg)
+ */
+void clamp_gripper_close(void);
+
+/**
+ * @brief 夹具旋转到指定角度 (0-270deg)
+ * @param deg 目标角度 0~270deg
+ */
+void clamp_rotate_set(uint16_t deg);
 
 #endif /* __CLAMP_H */

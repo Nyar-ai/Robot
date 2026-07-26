@@ -425,6 +425,11 @@
               <FilePath>../Core/Src/mpu6050.c</FilePath>
             </File>
             <File>
+              <FileName>clamp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\clamp.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/main.c</FilePath>
@@ -531,9 +536,9 @@
               <FilePath>../Core/Src/stm32f4xx_hal_timebase_tim.c</FilePath>
             </File>
             <File>
-              <FileName>clamp.c</FileName>
+              <FileName>servo.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Core\Src\clamp.c</FilePath>
+              <FilePath>..\Core\Src\servo.c</FilePath>
             </File>
           </Files>
         </Group>

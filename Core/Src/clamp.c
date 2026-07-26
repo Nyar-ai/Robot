@@ -16,6 +16,7 @@
 #include "clamp.h"
 #include "scurve.h"
 #include "stepper.h"
+#include "servo.h"
 #include <math.h>
 
 /* ---- 内部状态 ----------------------------------------------------------- */
@@ -61,6 +62,9 @@ static float fabsf_local(float v) { return v < 0.0f ? -v : v; }
 
 void clamp_init(void)
 {
+    /* 舵机底层初始化(TIM2 PSC/ARR + 启动 PWM) */
+    Servo_Init();
+
     Scurve_Config cfg = {
         .max_speed = mm_to_steps(CLAMP_HEIGHT_MAX_SPEED),   /* mm/s → 步/s */
         .max_accel = mm_to_steps(CLAMP_HEIGHT_MAX_ACCEL),   /* mm/s² → 步/s² */
@@ -81,7 +85,7 @@ void clamp_tick(void)
 
     switch (g_clamp.state) {
     case CL_STATE_MOVING: {
-        /* S 曲线推进，返回当前速度(步/s, 带符号) */
+        /* 梯形曲线推进，返回当前速度(步/s, 带符号) */
         step_s = Scurve_Update(&g_clamp.planner, dt);
 
         /* 积分高度(已完成位移对应的 mm) */
@@ -170,4 +174,21 @@ void clamp_set_height_now(float pos_mm)
 {
     g_clamp.height_mm = pos_mm;
     g_clamp.target_mm = pos_mm;
+}
+
+/* ---- 舵机控制(无需 tick 推进) ---- */
+
+void clamp_gripper_open(void)
+{
+    Servo_SetAngle(SERVO_GRIPPER, 180);
+}
+
+void clamp_gripper_close(void)
+{
+    Servo_SetAngle(SERVO_GRIPPER, 0);
+}
+
+void clamp_rotate_set(uint16_t deg)
+{
+    Servo_SetAngle(SERVO_ROTATE, deg);
 }

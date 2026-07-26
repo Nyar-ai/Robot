@@ -84,9 +84,9 @@ const osThreadAttr_t clampTask_attributes = {
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
-    .name = "defaultTask",
-    .stack_size = 128 * 4,
-    .priority = (osPriority_t)osPriorityNormal,
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -105,15 +105,14 @@ void StartDefaultTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
- * @brief  FreeRTOS initialization
- * @param  None
- * @retval None
- */
-void MX_FREERTOS_Init(void)
-{
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
+void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   chassis_init();
-  clamp_init();        /* 夹具控制层(带轮步进电机 S 曲线规划器) */
+  clamp_init();        /* 夹具控制层(带轮步进电机梯形曲线规划器) */
   Stepper_Init();      /* 配置 5 个步进定时器(Prescaler/ARR/占空比), 不立即转 */
   camera_align_init(); /* 摄像头地标校准模块(USART2 + DMA + 信号量) */
   /* MPU6050 初始化放在 gyroTask 里(因为它需要 HAL_Delay, 不能在内核启动前调) */
@@ -148,6 +147,7 @@ void MX_FREERTOS_Init(void)
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
+
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -161,7 +161,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /*
-   * 指令层(状态机, 非阻塞): 前进500mm → 回原点 → 摄像头校准 → 循环
+   * 指令层(状态机, 非阻塞): 前进500mm -> 回原点 -> 摄像头校准 -> 循环
    * 设计要点:
    *   - move_to_coordinate 为"发起-查询"语义, 同一目标反复调用只查询 arrived 状态
    *   - camera_align_at 在车停稳后于原点处校准坐标
@@ -169,6 +169,44 @@ void StartDefaultTask(void *argument)
    *   - 10ms 节拍轮询状态
    */
   (void)argument;
+
+  /* ===== 舵机测试 ===== */
+  chassis_uart_log("\r\n[servo] === Servo Test Start ===\r\n");
+
+  chassis_uart_log("[servo] Gripper OPEN (180deg)...\r\n");
+  clamp_gripper_open();
+  osDelay(1000);
+
+  chassis_uart_log("[servo] Gripper CLOSE (0deg)...\r\n");
+  clamp_gripper_close();
+  osDelay(1000);
+
+  chassis_uart_log("[servo] Gripper OPEN (180deg)...\r\n");
+  clamp_gripper_open();
+  osDelay(1000);
+
+  chassis_uart_log("[servo] Rotate 0deg...\r\n");
+  clamp_rotate_set(0);
+  osDelay(1500);
+
+  chassis_uart_log("[servo] Rotate 135deg...\r\n");
+  clamp_rotate_set(135);
+  osDelay(1500);
+
+  chassis_uart_log("[servo] Rotate 270deg...\r\n");
+  clamp_rotate_set(270);
+  osDelay(1500);
+
+  chassis_uart_log("[servo] Rotate 135deg (mid)...\r\n");
+  clamp_rotate_set(135);
+  osDelay(1000);
+
+  chassis_uart_log("[servo] === Servo Test Done ===\r\n\r\n");
+
+  /* ===== 正常任务 ===== */
+  chassis_uart_log("\r\n[task] auto-cycle start: forward 500mm -> return -> calibrate -> loop\r\n");
+  chassis_set_pose(-780, 0, 0);
+  chassis_uart_log("\r\n[task] set pose to (0, 950, 0)\r\n");
 
   enum
   {
@@ -188,15 +226,13 @@ void StartDefaultTask(void *argument)
     STATE_TURN3,
     DS_DONE
   } state = STATE_MOVE1;
-  chassis_uart_log("\r\n[task] auto-cycle start: forward 500mm -> return -> calibrate -> loop\r\n");
-  chassis_set_pose(-780, 0, 0);
-  chassis_uart_log("\r\n[task] set pose to (0, 950, 0)\r\n");
   for (;;)
   {
     switch (state)
     {
     case STATE_MOVE1:
     {
+      
       /* 前进至 (0, 0) */
       bool arrived = move_to_coordinate(125.0f, 0.0f);
       if (arrived)
@@ -372,7 +408,7 @@ void StartGyroTask(void *argument)
   if (ret != 0)
   {
     chassis_uart_log("[gyro] MPU6050 init failed, code=%d (run on odom only)\r\n", ret);
-    /* 初始化失败不进循环, 但 chassis 会自动退化用里程计 θ */
+    /* 初始化失败不进循环, 但 chassis 会自动退化用里程计 theta */
     for (;;)
     {
       osDelay(1000);
@@ -380,7 +416,7 @@ void StartGyroTask(void *argument)
   }
   chassis_uart_log("[gyro] MPU6050 init ok, calibrating yaw bias (keep still)...\r\n");
 
-  /* 上电静止校准零漂: 预热丢弃 + 3σ 鲁棒均值 + 记录温度基准.
+  /* 上电静止校准零漂: 预热丢弃 + 3sigma 鲁棒均值 + 记录温度基准.
    * 采样数受 MPU6050_CALIB_BUF(256) 限制; 校准期间车必须静止!
    * 预热约 0.4s + 采集约 0.5s, 共约 0.9s. */
   MPU6050_CalibrateYaw(256);
@@ -435,7 +471,7 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
   }
 }
 
-/* 1ms 控制层: S 曲线 + 麦轮逆解 + 里程计.
+/* 1ms 控制层: 梯形曲线 + 麦轮逆解 + 里程计.
  * 注意: 本任务严格 1ms 节拍, 绝不做阻塞操作(如串口打印), 否则破坏控制环精度.
  *       打印/指令编排交给低优先级的 defaultTask. */
 void StartChassisTask(void *argument)
@@ -456,7 +492,7 @@ void StartChassisTask(void *argument)
   }
 }
 
-/* 夹具 1ms 控制层: 梯形 S 曲线 + 高度步进电机 PWM.
+/* 夹具 1ms 控制层: 梯形曲线 + 高度步进电机 PWM.
  * 对标 chassisTask, 严格 1ms 节拍, 绝不做阻塞操作. */
 void StartClampTask(void *argument)
 {
@@ -471,8 +507,7 @@ void StartClampTask(void *argument)
   }
 }
 
-/* 轻量串口日志(USART1, 阻塞发送). 注: 若 Keil 使用 MicroLib 且报 vsnprintf 链接错误,
- * 请在 Options->Target 取消勾选 Use MicroLib(改用默认 libc), 即可支持 %f。 */
+/* 轻量串口日志(USART1, 阻塞发送). */
 static void chassis_uart_log(const char *fmt, ...)
 {
   static char buf[160];
