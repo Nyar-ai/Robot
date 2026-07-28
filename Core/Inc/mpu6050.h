@@ -60,17 +60,21 @@
 /* ---- 零漂抑制配置(分层策略) ---- */
 /* 1) DLPF 降噪 + 1kHz 采样匹配: DLPF_CFG=3→带宽44Hz/延迟4.9ms, 0=关闭(5.1kHz,噪声大) */
 #define MPU6050_DLPF_CFG            3
-/* 2) 死区: |角速度|<此值视为0, 掐断残余零漂的纯积分(deg/s) */
-#define MPU6050_DEADZONE_DPS        0.3f
+/* 2) 死区: |角速度|<此值视为0, 掐断残余零漂的纯积分(deg/s)
+ *   注意: 直线行驶缓慢偏航的角速度通常在 0.05~0.2°/s, 阈值不能过大否则陀螺仪
+ *         感知不到微小偏移。0.05°/s ≈ 0.8 LSB(@±2000°/s), 仅过滤电噪声。 */
+#define MPU6050_DEADZONE_DPS        0.05f
 /* 3) 校准: 预热丢弃样本数 + 采样缓冲上限(静态分配, 避免占栈) */
 #define MPU6050_CALIB_WARMUP        200
 #define MPU6050_CALIB_BUF           256
 /* 4) 运行期自适应零偏跟踪: 仅判"静止"时用大τ一阶低通更新零偏 */
 #define MPU6050_BIAS_TRACK_TAU      5.0f    /* 时间常数(s), 越大跟踪越慢越稳 */
-/* 5) 静止检测滑窗(@1kHz 时 200 样本=200ms)与判定阈值 */
+/* 5) 静止检测滑窗(@1kHz 时 200 样本=200ms)与判定阈值
+ *   注意: 阈值过松会导致直线缓行被误判为"静止"从而触发自适应零偏跟踪,
+ *         把真实角速度吸收进零偏估计, 进一步削弱感知。 */
 #define MPU6050_STATIC_WINDOW       200
-#define MPU6050_STATIC_RATE_THR     2.0f    /* 窗口去偏|均值|阈值(deg/s) */
-#define MPU6050_STATIC_VAR_THR      1.0f    /* 窗口方差阈值((deg/s)^2) */
+#define MPU6050_STATIC_RATE_THR     0.5f    /* 窗口去偏|均值|阈值(deg/s) */
+#define MPU6050_STATIC_VAR_THR      0.3f    /* 窗口方差阈值((deg/s)^2) */
 /* 6) 静止自动重校准: 持续静止达到此时长则用窗口均值覆盖零偏(ms) */
 #define MPU6050_RECALIB_STATIC_MS   2000
 /* 7) 温度补偿: bias(T)=bias0 + k·(T-T_calib), k 标定后填值(LSB/°C), 0=不补偿 */

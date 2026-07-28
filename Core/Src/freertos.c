@@ -171,34 +171,10 @@ void StartDefaultTask(void *argument)
   (void)argument;
 
   /* ===== 舵机测试 ===== */
-  chassis_uart_log("\r\n[servo] === Servo Test Start ===\r\n");
-
-  chassis_uart_log("[servo] Gripper OPEN (180deg)...\r\n");
-  clamp_gripper_open();
-  osDelay(1000);
-
-  chassis_uart_log("[servo] Gripper CLOSE (0deg)...\r\n");
-  clamp_gripper_close();
-  osDelay(1000);
-
-  chassis_uart_log("[servo] Gripper OPEN (180deg)...\r\n");
-  clamp_gripper_open();
-  osDelay(1000);
-
-  chassis_uart_log("[servo] Rotate 0deg...\r\n");
-  clamp_rotate_set(0);
-  osDelay(1500);
-
-  chassis_uart_log("[servo] Rotate 135deg...\r\n");
-  clamp_rotate_set(135);
-  osDelay(1500);
-
-  chassis_uart_log("[servo] Rotate 270deg...\r\n");
-  clamp_rotate_set(270);
-  osDelay(1500);
+  
 
   chassis_uart_log("[servo] Rotate 135deg (mid)...\r\n");
-  clamp_rotate_set(135);
+  clamp_rotate_set(128);
   osDelay(1000);
 
   chassis_uart_log("[servo] === Servo Test Done ===\r\n\r\n");

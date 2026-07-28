@@ -49,7 +49,7 @@
 // ---- 偏航角修正 PID 参数 (平移过程中锁定航向用) ----
 
 #define CHASSIS_YAW_KP            2.0f
-#define CHASSIS_YAW_KI            0.03f
+#define CHASSIS_YAW_KI            0.08f  /* 增大积分增益, 加快对持续微小偏航的纠正 */
 #define CHASSIS_YAW_KD            0.001f
 #define CHASSIS_YAW_IMAX          65.0f     /* 输出限幅 deg/s, 对齐1064的 vw≤65 */
 
