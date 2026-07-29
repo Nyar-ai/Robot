@@ -92,3 +92,5 @@ float Scurve_GetPos(const Scurve_Planner *p);
 float Scurve_GetSpeed(const Scurve_Planner *p);
 
 #endif /* __SCURVE_H */
+
+

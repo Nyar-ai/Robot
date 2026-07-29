@@ -63,3 +63,5 @@ void Mecanum_Inverse(float vx, float vy, float omega, float w[MECANUM_NUM]);
 void Mecanum_Forward(const float w[MECANUM_NUM], float *vx, float *vy, float *omega);
 
 #endif /* __MECANUM_H */
+
+

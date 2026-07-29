@@ -96,3 +96,5 @@ void clamp_gripper_close(void);
 void clamp_rotate_set(int16_t deg);
 
 #endif /* __CLAMP_H */
+
+

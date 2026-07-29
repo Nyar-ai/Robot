@@ -121,3 +121,5 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
 void camera_align_get_last_raw(int16_t *dx_px, int16_t *dy_px, uint8_t *status);
 
 #endif /* __CAMERA_ALIGN_H */
+
+

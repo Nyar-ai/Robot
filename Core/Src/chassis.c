@@ -85,16 +85,6 @@ static float g_odom_scale = CHASSIS_ODOM_SCALE;
 
 /* ---- 内部辅助 ----------------------------------------------------------- */
 
-/* 当前使用的航向角(deg): 陀螺仪 = 原始值 + 零点偏移量; 否则里程计 */
-static float chassis_theta_deg(void)
-{
-    if (g_chassis.gyro_used) {
-        return normalize_angle_deg(g_chassis.gyro_theta_deg + g_chassis.gyro_offset_deg);
-    } else {
-        return g_chassis.theta_deg;
-    }
-}
-
 static float deg2rad(float d) { return d * (float)(3.14159265358979323846 / 180.0); }
 static float rad2deg(float r) { return r * (float)(180.0 / 3.14159265358979323846); }
 
@@ -107,6 +97,16 @@ static float normalize_angle_deg(float a)
 }
 
 static float fabsf_local(float v) { return v < 0.0f ? -v : v; }
+
+/* 当前使用的航向角(deg): 陀螺仪 = 原始值 + 零点偏移量; 否则里程计 */
+static float chassis_theta_deg(void)
+{
+    if (g_chassis.gyro_used) {
+        return normalize_angle_deg(g_chassis.gyro_theta_deg + g_chassis.gyro_offset_deg);
+    } else {
+        return g_chassis.theta_deg;
+    }
+}
 
 /* ---- 偏航 PID (位置式) ---- */
 static float yaw_pid_compute(float error)
