@@ -500,3 +500,4 @@ static void chassis_uart_log(const char *fmt, ...)
 }
 
 /* USER CODE END Application */
+

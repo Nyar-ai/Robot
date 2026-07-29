@@ -40,6 +40,10 @@ static const uint16_t s_max_deg[SERVO_NUM] = {
 
 void Servo_Init(void)
 {
+    static bool inited = false;
+    if (inited) return;
+    inited = true;
+
     /* TIM2 时钟 84MHz (APB1)
      * PSC=83 → 1MHz (1us/tick)
      * ARR=19999 → 20ms 周期 (50Hz 舵机标准)
