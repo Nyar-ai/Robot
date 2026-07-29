@@ -174,7 +174,7 @@ void StartDefaultTask(void *argument)
   
 
   chassis_uart_log("[servo] Rotate 135deg (mid)...\r\n");
-  clamp_rotate_set(128);
+  clamp_rotate_set(0);
   osDelay(1000);
 
   chassis_uart_log("[servo] === Servo Test Done ===\r\n\r\n");

@@ -15,6 +15,7 @@
  */
 #include "servo.h"
 #include "tim.h"
+#include "clamp.h"
 
 /* ---- 每个舵机的硬件绑定 ---- */
 typedef struct {
@@ -53,7 +54,7 @@ void Servo_Init(void)
 
     /* 初始安全角度 */
     Servo_SetAngle(SERVO_GRIPPER, 180);   /* 夹爪张开 */
-    Servo_SetAngle(SERVO_ROTATE,   135);  /* 旋转中位 (270deg行程中点) */
+    Servo_SetAngle(SERVO_ROTATE,   CLAMP_ROTATE_ZERO_DEG);  /* 旋转起始方向 (逻辑零点) */
 }
 
 void Servo_SetAngle(uint8_t id, uint16_t deg)

@@ -55,6 +55,7 @@ typedef struct {
     /* 陀螺仪注入 */
     bool  gyro_used;
     float gyro_theta_deg;
+    float gyro_offset_deg;   /* 陀螺仪零点偏移: 逻辑航向 = 陀螺仪原始值 + 偏移量 */
 
     /* 运动模式 */
     Chassis_Mode mode;
@@ -84,10 +85,14 @@ static float g_odom_scale = CHASSIS_ODOM_SCALE;
 
 /* ---- 内部辅助 ----------------------------------------------------------- */
 
-/* 当前使用的航向角(deg): 优先陀螺仪, 否则里程计 */
+/* 当前使用的航向角(deg): 陀螺仪 = 原始值 + 零点偏移量; 否则里程计 */
 static float chassis_theta_deg(void)
 {
-    return g_chassis.gyro_used ? g_chassis.gyro_theta_deg : g_chassis.theta_deg;
+    if (g_chassis.gyro_used) {
+        return normalize_angle_deg(g_chassis.gyro_theta_deg + g_chassis.gyro_offset_deg);
+    } else {
+        return g_chassis.theta_deg;
+    }
 }
 
 static float deg2rad(float d) { return d * (float)(3.14159265358979323846 / 180.0); }
@@ -155,6 +160,7 @@ void chassis_init(void)
 
     g_chassis.gyro_used = false;
     g_chassis.gyro_theta_deg = 0.0f;
+    g_chassis.gyro_offset_deg = 0.0f;
 
     g_chassis.mode = CH_MODE_IDLE;
     g_chassis.arrived = true;
@@ -176,15 +182,15 @@ void chassis_init(void)
 
 void chassis_feed_gyro(float gyro_deg)
 {
+    /* 保存陀螺仪原始物理航向（带偏移量的逻辑航向由 chassis_theta_deg() 计算） */
     g_chassis.gyro_theta_deg = normalize_angle_deg(gyro_deg);
     g_chassis.gyro_used = true;
-    /* 用陀螺仪角同步里程计 θ, 保证 chassis_theta_deg 一致 */
-    g_chassis.theta_deg = g_chassis.gyro_theta_deg;
 }
 
 void chassis_clear_gyro(void)
 {
     g_chassis.gyro_used = false;
+    g_chassis.gyro_offset_deg = 0.0f;
 }
 
 void chassis_set_target_heading(float heading_deg)
@@ -206,7 +212,11 @@ void chassis_set_pose(float x, float y, float theta_deg)
     g_chassis.x = x;
     g_chassis.y = y;
     g_chassis.theta_deg = normalize_angle_deg(theta_deg);
-    if (g_chassis.gyro_used) g_chassis.gyro_theta_deg = g_chassis.theta_deg;
+    if (g_chassis.gyro_used) {
+        /* 逻辑航向 = 陀螺仪原始值 + 偏移量 → 偏移量 = 逻辑 - 原始 */
+        g_chassis.gyro_offset_deg = normalize_angle_deg(
+            g_chassis.theta_deg - g_chassis.gyro_theta_deg);
+    }
 }
 
 void chassis_get_pose(float *x, float *y, float *theta_deg)
@@ -238,6 +248,13 @@ void chassis_get_wheel_speed(float w[4])
 
 bool move_to_coordinate(float tx, float ty)
 {
+    /* 快速路径：已到达且目标未变，直接返回，避免 IDLE 下重复覆盖航向锁定目标 */
+    if (g_chassis.arrived && g_chassis.mode == CH_MODE_IDLE &&
+        fabsf_local(tx - g_chassis.move_tx) < 0.5f &&
+        fabsf_local(ty - g_chassis.move_ty) < 0.5f) {
+        return true;
+    }
+
     /* 目标变化 → 重新规划 */
     float dx = tx - g_chassis.move_tx;
     float dy = ty - g_chassis.move_ty;
@@ -245,6 +262,8 @@ bool move_to_coordinate(float tx, float ty)
                           (fabsf_local(dx) > 0.5f) || (fabsf_local(dy) > 0.5f);
 
     if (target_changed) {
+        bool was_moving = (g_chassis.mode == CH_MODE_MOVING);
+
         /* 切换到平移模式前, 先停掉旋转 */
         if (g_chassis.mode == CH_MODE_TURNING) {
             Scurve_Stop(&g_chassis.rot_planner);
@@ -263,9 +282,11 @@ bool move_to_coordinate(float tx, float ty)
         g_chassis.move_ty = ty;
         g_chassis.trans_phi_rad = atan2f(eby, ebx); /* 车体系方位角 */
 
-        /* 锁定当前航向作为平移保持目标 */
-        g_chassis.target_heading_deg = chassis_theta_deg();
-        yaw_pid_reset();   /* 清 PID 历史 */
+        /* 仅在从非移动状态首次发起移动时才锁定航向 */
+        if (!was_moving) {
+            g_chassis.target_heading_deg = chassis_theta_deg();
+            yaw_pid_reset();   /* 清 PID 历史 */
+        }
 
         if (d < CHASSIS_POS_TOL_MM) {
             /* 已在目标范围内 */
@@ -286,6 +307,12 @@ bool headturn(int16_t angle)
 {
     float target = (float)angle;
 
+    /* 快速路径：已到达且目标未变 */
+    if (g_chassis.arrived && g_chassis.mode == CH_MODE_IDLE &&
+        fabsf_local(normalize_angle_deg(target - g_chassis.turn_target_deg)) < 0.5f) {
+        return true;
+    }
+
     /* 目标变化 → 重新规划 */
     bool target_changed = (g_chassis.mode != CH_MODE_TURNING) ||
                           (fabsf_local(normalize_angle_deg(target - g_chassis.turn_target_deg)) > 0.5f);
@@ -302,7 +329,7 @@ bool headturn(int16_t angle)
 
         yaw_pid_reset();   /* 清 PID 历史 */
 
-        if (fabsf_local(dtheta) < CHASSIS_ANG_TOL_DEG) {
+        if (fabsf_local(dtheta) < CHASSIS_ANG_TOL_DEG * 2.0f) {
             g_chassis.mode = CH_MODE_IDLE;
             g_chassis.arrived = true;
         } else {
@@ -366,6 +393,8 @@ void chassis_tick(void)
                 float eby = -ewx * sinf(theta_rad) + ewy * cosf(theta_rad);
                 g_chassis.trans_phi_rad = atan2f(eby, ebx);
                 Scurve_MoveTo(&g_chassis.trans_planner, d / g_odom_scale);
+                vx_b = 0.0f;   /* 显式清零，从下一 tick 用新方向 */
+                vy_b = 0.0f;
             }
         }
         break;

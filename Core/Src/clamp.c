@@ -85,19 +85,24 @@ void clamp_tick(void)
 
     switch (g_clamp.state) {
     case CL_STATE_MOVING: {
+        /* 记录 planner 更新前的累计位移(步)，用于换算高度增量 */
+        float pos_before = Scurve_GetPos(&g_clamp.planner);
+
         /* 梯形曲线推进，返回当前速度(步/s, 带符号) */
         step_s = Scurve_Update(&g_clamp.planner, dt);
 
-        /* 积分高度(已完成位移对应的 mm) */
-        float delta_mm = steps_to_mm(step_s) * dt;
+        /* 位置增量 = planner 内部位移变化量（包含钳位修正），
+         * 避免用 step_s * dt 积分丢失 planner 到达时的钳位修正量 */
+        float pos_after = Scurve_GetPos(&g_clamp.planner);
+        float delta_mm  = steps_to_mm(pos_after - pos_before);
         g_clamp.height_mm += delta_mm;
 
         /* 到达判定: 规划器空闲 */
         if (Scurve_IsIdle(&g_clamp.planner)) {
             float err = fabsf_local(g_clamp.target_mm - g_clamp.height_mm);
             if (err < CLAMP_HEIGHT_TOL_MM * 3.0f) {
-                g_clamp.state   = CL_STATE_IDLE;
-                g_clamp.arrived = true;
+                g_clamp.state    = CL_STATE_IDLE;
+                g_clamp.arrived  = true;
                 g_clamp.height_mm = g_clamp.target_mm;  /* 精确对齐 */
                 step_s = 0.0f;
             } else {
@@ -105,13 +110,13 @@ void clamp_tick(void)
                 float remaining_mm = g_clamp.target_mm - g_clamp.height_mm;
                 float remaining_steps = mm_to_steps(remaining_mm);
                 if (fabsf_local(remaining_steps) < 1e-3f) {
-                    g_clamp.state   = CL_STATE_IDLE;
-                    g_clamp.arrived = true;
+                    g_clamp.state    = CL_STATE_IDLE;
+                    g_clamp.arrived  = true;
                     g_clamp.height_mm = g_clamp.target_mm;
+                    step_s = 0.0f;
                 } else {
                     Scurve_MoveTo(&g_clamp.planner, remaining_steps);
                 }
-                step_s = 0.0f;
             }
         }
         break;
@@ -128,6 +133,11 @@ void clamp_tick(void)
 
 bool clamp_set_height(float target_mm)
 {
+    /* 快速路径：已到达且目标未变，直接返回，避免不必要地重置 planner */
+    if (g_clamp.arrived && fabsf_local(target_mm - g_clamp.target_mm) < CLAMP_HEIGHT_TOL_MM) {
+        return true;
+    }
+
     /* 目标变化 → 重新规划 */
     bool target_changed = (g_clamp.state != CL_STATE_MOVING) ||
                           (fabsf_local(target_mm - g_clamp.target_mm) > 0.5f);
@@ -172,8 +182,13 @@ float clamp_get_height(void)
 
 void clamp_set_height_now(float pos_mm)
 {
+    /* 强制停车，避免旧 planner 运动覆盖校准值 */
+    Scurve_Stop(&g_clamp.planner);
+    g_clamp.state     = CL_STATE_IDLE;
+    g_clamp.arrived   = true;
     g_clamp.height_mm = pos_mm;
     g_clamp.target_mm = pos_mm;
+    Stepper_SetSpeed(STEPPER_M5, 0.0f);
 }
 
 /* ---- 舵机控制(无需 tick 推进) ---- */
@@ -188,7 +203,10 @@ void clamp_gripper_close(void)
     Servo_SetAngle(SERVO_GRIPPER, 0);
 }
 
-void clamp_rotate_set(uint16_t deg)
+void clamp_rotate_set(int16_t deg)
 {
-    Servo_SetAngle(SERVO_ROTATE, deg);
+    int32_t raw = CLAMP_ROTATE_ZERO_DEG + (int32_t)deg;
+    if (raw < 0)   raw = 0;
+    if (raw > 270) raw = 270;
+    Servo_SetAngle(SERVO_ROTATE, (uint16_t)raw);
 }

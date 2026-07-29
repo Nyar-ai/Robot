@@ -28,6 +28,9 @@
 /* ---- 到达阈值 ---- */
 #define CLAMP_HEIGHT_TOL_MM        0.05f     /* 高度到达阈值(mm) */
 
+/* ---- 旋转舵机逻辑零点(物理角度) ---- */
+#define CLAMP_ROTATE_ZERO_DEG      128    /* 以此为0°基准, 范围 0~270 */
+
 /* ---- 默认梯形曲线参数(高度, 量纲 mm) ---- */
 #define CLAMP_HEIGHT_MAX_SPEED     50.0f     /* mm/s   */
 #define CLAMP_HEIGHT_MAX_ACCEL     80.0f     /* mm/s^2 */
@@ -86,9 +89,10 @@ void clamp_gripper_open(void);
 void clamp_gripper_close(void);
 
 /**
- * @brief 夹具旋转到指定角度 (0-270deg)
- * @param deg 目标角度 0~270deg
+ * @brief 夹具旋转, 以 CLAMP_ROTATE_ZERO_DEG(128°)为逻辑零点
+ * @param deg 相对偏移: 正值右偏/负值左偏
+ *            物理钳位范围 [0, 270], 对应逻辑范围 [-CLAMP_ROTATE_ZERO_DEG, 270-CLAMP_ROTATE_ZERO_DEG]
  */
-void clamp_rotate_set(uint16_t deg);
+void clamp_rotate_set(int16_t deg);
 
 #endif /* __CLAMP_H */
