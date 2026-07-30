@@ -84,9 +84,9 @@ const osThreadAttr_t clampTask_attributes = {
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "defaultTask",
+    .stack_size = 128 * 4,
+    .priority = (osPriority_t)osPriorityNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -105,11 +105,12 @@ void StartDefaultTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
-void MX_FREERTOS_Init(void) {
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
+void MX_FREERTOS_Init(void)
+{
   /* USER CODE BEGIN Init */
   chassis_init();
   clamp_init();        /* 夹具控制层(带轮步进电机梯形曲线规划器) */
@@ -147,7 +148,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
-
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -171,12 +171,13 @@ void StartDefaultTask(void *argument)
   (void)argument;
 
   /* ===== 舵机测试 ===== */
-  
 
   chassis_uart_log("[servo] Rotate 135deg (mid)...\r\n");
   clamp_rotate_set(0);
   osDelay(1000);
-
+  clamp_gripper_open();
+  osDelay(1000);
+  clamp_gripper_close();
   chassis_uart_log("[servo] === Servo Test Done ===\r\n\r\n");
 
   /* ===== 正常任务 ===== */
@@ -200,15 +201,35 @@ void StartDefaultTask(void *argument)
     STATE_MOVE7,
     STATE_MOVE8,
     STATE_TURN3,
+    GO_UP,
+    GO_DOWN,
     DS_DONE
-  } state = DS_DONE;
+  } state = GO_UP;
   for (;;)
   {
     switch (state)
     {
+    case GO_UP:
+    {
+      if (clamp_set_height(80.0f))
+      {
+        chassis_uart_log("[clamp] up done\r\n");
+        state = GO_DOWN;
+      }
+      break;
+    }
+    case GO_DOWN:
+    {
+      if (clamp_set_height(0.0f))
+      {
+        chassis_uart_log("[clamp] down done\r\n");
+        state = DS_DONE;
+      }
+      break;
+    }
     case STATE_MOVE1:
     {
-      
+
       /* 前进至 (0, 0) */
       bool arrived = move_to_coordinate(125.0f, 0.0f);
       if (arrived)
@@ -500,4 +521,3 @@ static void chassis_uart_log(const char *fmt, ...)
 }
 
 /* USER CODE END Application */
-

@@ -80,6 +80,10 @@ void Stepper_Init(void)
     __HAL_TIM_SET_PRESCALER(&htim8, 167);
     __HAL_TIM_SET_PRESCALER(&htim9, 167);
 
+    /* 高级定时器(TIM1/TIM8) PSC 有影子寄存器, 需生成更新事件使其立即生效 */
+    HAL_TIM_GenerateEvent(&htim1, TIM_EVENTSOURCE_UPDATE);
+    HAL_TIM_GenerateEvent(&htim8, TIM_EVENTSOURCE_UPDATE);
+
     /* 2) 各通道: ARR 预装载使能(改 ARR 时影子寄存器在更新事件生效, 避免毛刺)
      *    占空比 50%(下次 SetSpeed 会重设), 先设一个安全的中速 */
     for (uint8_t i = 0; i < STEPPER_NUM; ++i)
@@ -159,7 +163,7 @@ void Stepper_SetWheelSpeed(uint8_t id, float mm_s)
 
 void Stepper_SetWheelSpeedAll(const float mm_s[STEPPER_NUM])
 {
-    for (uint8_t i = 0; i < STEPPER_NUM; ++i)
+    for (uint8_t i = 0; i < MECANUM_NUM; ++i)
         Stepper_SetWheelSpeed(i, mm_s[i]);
 }
 
