@@ -30,7 +30,7 @@ virtualFolder:
                 - path: ../Core/Src/stm32f4xx_it.c
                 - path: ../Core/Src/stm32f4xx_hal_msp.c
                 - path: ../Core/Src/stm32f4xx_hal_timebase_tim.c
-                - path: ../Core/Src/scurve.c
+                - path: ../Core/Src/trape.c
                 - path: ../Core/Src/mecanum.c
                 - path: ../Core/Src/chassis.c
                 - path: ../Core/Src/stepper.c

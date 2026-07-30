@@ -1,21 +1,21 @@
 /**
- * @file    test_scurve.c
+ * @file    test_trape.c
  * @brief   梯形曲线(三段式)速度规划器单元测试
  *
- * 验证 scurve.h 的:
+ * 验证 trape.h 的:
  *   - 基本到位与位置精度
  *   - 速度/加速度不超限
  *   - 双向运动
  *   - 极小目标/Stop/NULL 等边界
  */
 #include "test_framework.h"
-#include "scurve.h"
+#include "trape.h"
 
 /* 测试套件入口(由 test_main.c 调用) */
-void test_scurve_run(void);
+void test_trape_run(void);
 
 /* 默认测试参数(量纲 mm): {max_speed, max_accel, min_speed} —— 对齐 project 3 参数模型 */
-static const Scurve_Config DEF_CFG = { 400.0f, 800.0f, 0.0f };
+static const Trape_Config DEF_CFG = { 400.0f, 800.0f, 0.0f };
 
 /* ---- 各用例 ---- */
 
@@ -23,16 +23,16 @@ static const Scurve_Config DEF_CFG = { 400.0f, 800.0f, 0.0f };
 static void test_basic_reach(void)
 {
     TEST_BEGIN("基本到位 MoveTo(1000)");
-    Scurve_Planner p;
-    Scurve_Init(&p, &DEF_CFG);
-    Scurve_MoveTo(&p, 1000.0f);
+    Trape_Planner p;
+    Trape_Init(&p, &DEF_CFG);
+    Trape_MoveTo(&p, 1000.0f);
 
     int max_ticks = 100000; /* 上限保护, 防死循环 */
-    while (!Scurve_IsIdle(&p) && max_ticks-- > 0) {
-        Scurve_Update(&p, 0.001f);
+    while (!Trape_IsIdle(&p) && max_ticks-- > 0) {
+        Trape_Update(&p, 0.001f);
     }
-    TEST_ASSERT_TRUE(Scurve_IsIdle(&p), "应到达 STOP");
-    TEST_ASSERT_FLOAT_NEAR(1000.0f, Scurve_GetPos(&p), 10.0f, "最终位置≈1000(误差<1%)");
+    TEST_ASSERT_TRUE(Trape_IsIdle(&p), "应到达 STOP");
+    TEST_ASSERT_FLOAT_NEAR(1000.0f, Trape_GetPos(&p), 10.0f, "最终位置≈1000(误差<1%)");
     TEST_END();
 }
 
@@ -40,14 +40,14 @@ static void test_basic_reach(void)
 static void test_speed_limit(void)
 {
     TEST_BEGIN("速度上限不超 max_speed");
-    Scurve_Planner p;
-    Scurve_Init(&p, &DEF_CFG);
-    Scurve_MoveTo(&p, 5000.0f); /* 长距离确保进入匀速段 */
+    Trape_Planner p;
+    Trape_Init(&p, &DEF_CFG);
+    Trape_MoveTo(&p, 5000.0f); /* 长距离确保进入匀速段 */
 
     float max_observed = 0.0f;
     int max_ticks = 100000;
-    while (!Scurve_IsIdle(&p) && max_ticks-- > 0) {
-        float s = Scurve_Update(&p, 0.001f);
+    while (!Trape_IsIdle(&p) && max_ticks-- > 0) {
+        float s = Trape_Update(&p, 0.001f);
         if (s < 0.0f) s = -s;
         if (s > max_observed) max_observed = s;
     }
@@ -63,16 +63,16 @@ static void test_speed_limit(void)
 static void test_negative_target(void)
 {
     TEST_BEGIN("双向 MoveTo(-1000)");
-    Scurve_Planner p;
-    Scurve_Init(&p, &DEF_CFG);
-    Scurve_MoveTo(&p, -1000.0f);
+    Trape_Planner p;
+    Trape_Init(&p, &DEF_CFG);
+    Trape_MoveTo(&p, -1000.0f);
 
     int max_ticks = 100000;
-    while (!Scurve_IsIdle(&p) && max_ticks-- > 0) {
-        Scurve_Update(&p, 0.001f);
+    while (!Trape_IsIdle(&p) && max_ticks-- > 0) {
+        Trape_Update(&p, 0.001f);
     }
-    TEST_ASSERT_TRUE(Scurve_IsIdle(&p), "应到达 STOP");
-    TEST_ASSERT_FLOAT_NEAR(-1000.0f, Scurve_GetPos(&p), 10.0f, "最终位置≈-1000");
+    TEST_ASSERT_TRUE(Trape_IsIdle(&p), "应到达 STOP");
+    TEST_ASSERT_FLOAT_NEAR(-1000.0f, Trape_GetPos(&p), 10.0f, "最终位置≈-1000");
     TEST_END();
 }
 
@@ -80,10 +80,10 @@ static void test_negative_target(void)
 static void test_tiny_target(void)
 {
     TEST_BEGIN("极小目标立即STOP");
-    Scurve_Planner p;
-    Scurve_Init(&p, &DEF_CFG);
-    Scurve_MoveTo(&p, 0.0001f);
-    TEST_ASSERT_TRUE(Scurve_IsIdle(&p), "极小目标应直接STOP");
+    Trape_Planner p;
+    Trape_Init(&p, &DEF_CFG);
+    Trape_MoveTo(&p, 0.0001f);
+    TEST_ASSERT_TRUE(Trape_IsIdle(&p), "极小目标应直接STOP");
     TEST_END();
 }
 
@@ -91,15 +91,15 @@ static void test_tiny_target(void)
 static void test_stop_midway(void)
 {
     TEST_BEGIN("运动中Stop立即停");
-    Scurve_Planner p;
-    Scurve_Init(&p, &DEF_CFG);
-    Scurve_MoveTo(&p, 5000.0f);
+    Trape_Planner p;
+    Trape_Init(&p, &DEF_CFG);
+    Trape_MoveTo(&p, 5000.0f);
     /* 跑 100ms 让它动起来 */
-    for (int i = 0; i < 100; ++i) Scurve_Update(&p, 0.001f);
-    TEST_ASSERT_FALSE(Scurve_IsIdle(&p), "100ms后应还在运动");
-    Scurve_Stop(&p);
-    TEST_ASSERT_TRUE(Scurve_IsIdle(&p), "Stop后应IDLE");
-    TEST_ASSERT_FLOAT_NEAR(0.0f, Scurve_GetSpeed(&p), 0.001f, "Stop后速度=0");
+    for (int i = 0; i < 100; ++i) Trape_Update(&p, 0.001f);
+    TEST_ASSERT_FALSE(Trape_IsIdle(&p), "100ms后应还在运动");
+    Trape_Stop(&p);
+    TEST_ASSERT_TRUE(Trape_IsIdle(&p), "Stop后应IDLE");
+    TEST_ASSERT_FLOAT_NEAR(0.0f, Trape_GetSpeed(&p), 0.001f, "Stop后速度=0");
     TEST_END();
 }
 
@@ -107,13 +107,13 @@ static void test_stop_midway(void)
 static void test_null_safe(void)
 {
     TEST_BEGIN("NULL 容错");
-    Scurve_Init(NULL, &DEF_CFG);     /* 不应崩溃 */
-    Scurve_MoveTo(NULL, 100.0f);
-    Scurve_Stop(NULL);
-    TEST_ASSERT_TRUE(Scurve_IsIdle(NULL) == false, "NULL planner 非idle");
-    TEST_ASSERT_FLOAT_NEAR(0.0f, Scurve_GetPos(NULL), 0.001f, "NULL pos=0");
-    TEST_ASSERT_FLOAT_NEAR(0.0f, Scurve_GetSpeed(NULL), 0.001f, "NULL speed=0");
-    TEST_ASSERT_FLOAT_NEAR(0.0f, Scurve_Update(NULL, 0.001f), 0.001f, "NULL update=0");
+    Trape_Init(NULL, &DEF_CFG);     /* 不应崩溃 */
+    Trape_MoveTo(NULL, 100.0f);
+    Trape_Stop(NULL);
+    TEST_ASSERT_TRUE(Trape_IsIdle(NULL) == false, "NULL planner 非idle");
+    TEST_ASSERT_FLOAT_NEAR(0.0f, Trape_GetPos(NULL), 0.001f, "NULL pos=0");
+    TEST_ASSERT_FLOAT_NEAR(0.0f, Trape_GetSpeed(NULL), 0.001f, "NULL speed=0");
+    TEST_ASSERT_FLOAT_NEAR(0.0f, Trape_Update(NULL, 0.001f), 0.001f, "NULL update=0");
     TEST_END();
 }
 
@@ -121,17 +121,17 @@ static void test_null_safe(void)
 static void test_nonpositive_dt(void)
 {
     TEST_BEGIN("dt<=0 不推进");
-    Scurve_Planner p;
-    Scurve_Init(&p, &DEF_CFG);
-    Scurve_MoveTo(&p, 1000.0f);
-    float s = Scurve_Update(&p, 0.0f);
+    Trape_Planner p;
+    Trape_Init(&p, &DEF_CFG);
+    Trape_MoveTo(&p, 1000.0f);
+    float s = Trape_Update(&p, 0.0f);
     TEST_ASSERT_FLOAT_NEAR(0.0f, s, 0.001f, "dt=0 返回0");
-    TEST_ASSERT_FALSE(Scurve_IsIdle(&p), "dt=0 不改变状态");
+    TEST_ASSERT_FALSE(Trape_IsIdle(&p), "dt=0 不改变状态");
     TEST_END();
 }
 
 /* ---- 套件汇总 ---- */
-void test_scurve_run(void)
+void test_trape_run(void)
 {
     TEST_SUITE("梯形曲线规划器");
     test_basic_reach();

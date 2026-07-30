@@ -13,7 +13,7 @@ int g_test_fail = 0;
 
 /* 各套件入口 */
 void test_mecanum_run(void);
-void test_scurve_run(void);
+void test_trape_run(void);
 void test_chassis_run(void);
 
 int main(int argc, char **argv)
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     printf("##############################################################\n");
 
     test_mecanum_run();
-    test_scurve_run();
+    test_trape_run();
     test_chassis_run();
 
     printf("\n");

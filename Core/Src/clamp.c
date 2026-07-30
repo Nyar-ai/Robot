@@ -3,18 +3,18 @@
  * @brief   夹具控制层实现: 高度(带轮步进电机)梯形加减速控制
  *
  * 数据流:
- *   clamp_set_height(target_mm) ──► [状态机] ──► Scurve_Planner(量纲:步)
+ *   clamp_set_height(target_mm) ──► [状态机] ──► Trape_Planner(量纲:步)
  *                                                      │
  *   clamp_tick (1ms, clampTask) ────────────────────────┘
  *                                                      │
- *                                            Scurve_Update → 步速
+ *                                            Trape_Update → 步速
  *                                                      │
  *                                          Stepper_SetSpeed(M5, step_s)
  *
  * 高度换算: step = mm / CLAMP_PULLEY_CIRCUM_MM * CLAMP_STEPS_PER_REV
  */
 #include "clamp.h"
-#include "scurve.h"
+#include "trape.h"
 #include "stepper.h"
 #include "servo.h"
 #include <math.h>
@@ -34,7 +34,7 @@ typedef struct {
     bool         arrived;
 
     /* 梯形规划器(量纲: 步) */
-    Scurve_Planner planner;
+    Trape_Planner planner;
 
     /* 本次目标(mm), 用于检测目标是否变化 */
     float target_mm;
@@ -65,12 +65,12 @@ void clamp_init(void)
     /* 舵机底层初始化(TIM2 PSC/ARR + 启动 PWM) */
     Servo_Init();
 
-    Scurve_Config cfg = {
+    Trape_Config cfg = {
         .max_speed = mm_to_steps(CLAMP_HEIGHT_MAX_SPEED),   /* mm/s → 步/s */
         .max_accel = mm_to_steps(CLAMP_HEIGHT_MAX_ACCEL),   /* mm/s² → 步/s² */
         .min_speed = mm_to_steps(CLAMP_HEIGHT_MIN_SPEED)    /* mm/s → 步/s */
     };
-    Scurve_Init(&g_clamp.planner, &cfg);
+    Trape_Init(&g_clamp.planner, &cfg);
 
     g_clamp.height_mm = 0.0f;
     g_clamp.state     = CL_STATE_IDLE;
@@ -86,19 +86,19 @@ void clamp_tick(void)
     switch (g_clamp.state) {
     case CL_STATE_MOVING: {
         /* 记录 planner 更新前的累计位移(步)，用于换算高度增量 */
-        float pos_before = Scurve_GetPos(&g_clamp.planner);
+        float pos_before = Trape_GetPos(&g_clamp.planner);
 
         /* 梯形曲线推进，返回当前速度(步/s, 带符号) */
-        step_s = Scurve_Update(&g_clamp.planner, dt);
+        step_s = Trape_Update(&g_clamp.planner, dt);
 
         /* 位置增量 = planner 内部位移变化量（包含钳位修正），
          * 避免用 step_s * dt 积分丢失 planner 到达时的钳位修正量 */
-        float pos_after = Scurve_GetPos(&g_clamp.planner);
+        float pos_after = Trape_GetPos(&g_clamp.planner);
         float delta_mm  = steps_to_mm(pos_after - pos_before);
         g_clamp.height_mm += delta_mm;
 
         /* 到达判定: 规划器空闲 */
-        if (Scurve_IsIdle(&g_clamp.planner)) {
+        if (Trape_IsIdle(&g_clamp.planner)) {
             float err = fabsf_local(g_clamp.target_mm - g_clamp.height_mm);
             if (err < CLAMP_HEIGHT_TOL_MM * 3.0f) {
                 g_clamp.state    = CL_STATE_IDLE;
@@ -115,7 +115,7 @@ void clamp_tick(void)
                     g_clamp.height_mm = g_clamp.target_mm;
                     step_s = 0.0f;
                 } else {
-                    Scurve_MoveTo(&g_clamp.planner, remaining_steps);
+                    Trape_MoveTo(&g_clamp.planner, remaining_steps);
                 }
             }
         }
@@ -153,7 +153,7 @@ bool clamp_set_height(float target_mm)
             g_clamp.state   = CL_STATE_IDLE;
             g_clamp.arrived = true;
         } else {
-            Scurve_MoveTo(&g_clamp.planner, delta_steps);
+            Trape_MoveTo(&g_clamp.planner, delta_steps);
             g_clamp.state   = CL_STATE_MOVING;
             g_clamp.arrived = false;
         }
@@ -164,7 +164,7 @@ bool clamp_set_height(float target_mm)
 
 void clamp_stop(void)
 {
-    Scurve_Stop(&g_clamp.planner);
+    Trape_Stop(&g_clamp.planner);
     g_clamp.state   = CL_STATE_IDLE;
     g_clamp.arrived = true;
     Stepper_SetSpeed(STEPPER_M5, 0.0f);
@@ -183,7 +183,7 @@ float clamp_get_height(void)
 void clamp_set_height_now(float pos_mm)
 {
     /* 强制停车，避免旧 planner 运动覆盖校准值 */
-    Scurve_Stop(&g_clamp.planner);
+    Trape_Stop(&g_clamp.planner);
     g_clamp.state     = CL_STATE_IDLE;
     g_clamp.arrived   = true;
     g_clamp.height_mm = pos_mm;

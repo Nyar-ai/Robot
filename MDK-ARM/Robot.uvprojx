@@ -395,9 +395,9 @@
           <GroupName>Application/User/Core</GroupName>
           <Files>
             <File>
-              <FileName>scurve.c</FileName>
+              <FileName>trape.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Core/Src/scurve.c</FilePath>
+              <FilePath>../Core/Src/trape.c</FilePath>
             </File>
             <File>
               <FileName>mecanum.c</FileName>

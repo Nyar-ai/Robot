@@ -5,7 +5,7 @@
  * 数据流:
  *   move_to_coordinate(tx,ty) ──┐
  *   headturn(angle)          ──┤
- *                              ├─► [状态机] ─► Scurve_Planner(平移/旋转)
+ *                              ├─► [状态机] ─► Trape_Planner(平移/旋转)
  *   chassis_tick (1ms)       ──┘                │
  *                                                ▼
  *                                          速度分解 (vx_b, vy_b, ω)
@@ -21,7 +21,7 @@
  *   输出 ω 叠加到麦轮逆解, 在平移过程中持续纠偏.
  */
 #include "chassis.h"
-#include "scurve.h"
+#include "trape.h"
 #include "mecanum.h"
 #include <math.h>
 
@@ -65,12 +65,12 @@ typedef struct {
     float target_heading_deg;  /* deg, 平移时要保持的绝对角度 */
 
     /* 平移规划 */
-    Scurve_Planner trans_planner;
+    Trape_Planner trans_planner;
     float trans_phi_rad;   /* 本次平移在车体系下的方位角(发起时锁定) */
     float move_tx, move_ty;/* 本次平移目标(用于判定目标是否变化) */
 
     /* 旋转规划 */
-    Scurve_Planner rot_planner;
+    Trape_Planner rot_planner;
     float rot_dir;         /* +1 / -1 */
     float turn_target_deg; /* 本次转向目标绝对角度 */
 
@@ -141,18 +141,18 @@ static void yaw_pid_reset(void)
 
 void chassis_init(void)
 {
-    Scurve_Config trans_cfg = {
+    Trape_Config trans_cfg = {
         .max_speed = CHASSIS_TRANS_MAX_SPEED,
         .max_accel = CHASSIS_TRANS_MAX_ACCEL,
         .min_speed = CHASSIS_TRANS_MIN_SPEED
     };
-    Scurve_Config rot_cfg = {
+    Trape_Config rot_cfg = {
         .max_speed = CHASSIS_ROT_MAX_SPEED,
         .max_accel = CHASSIS_ROT_MAX_ACCEL,
         .min_speed = CHASSIS_ROT_MIN_SPEED
     };
-    Scurve_Init(&g_chassis.trans_planner, &trans_cfg);
-    Scurve_Init(&g_chassis.rot_planner,   &rot_cfg);
+    Trape_Init(&g_chassis.trans_planner, &trans_cfg);
+    Trape_Init(&g_chassis.rot_planner,   &rot_cfg);
 
     g_chassis.x = 0.0f;
     g_chassis.y = 0.0f;
@@ -233,8 +233,8 @@ bool chassis_is_idle(void)
 
 void chassis_stop(void)
 {
-    Scurve_Stop(&g_chassis.trans_planner);
-    Scurve_Stop(&g_chassis.rot_planner);
+    Trape_Stop(&g_chassis.trans_planner);
+    Trape_Stop(&g_chassis.rot_planner);
     g_chassis.mode = CH_MODE_IDLE;
     g_chassis.arrived = true;
     for (int i = 0; i < MECANUM_NUM; ++i) g_chassis.wheel_speed[i] = 0.0f;
@@ -266,7 +266,7 @@ bool move_to_coordinate(float tx, float ty)
 
         /* 切换到平移模式前, 先停掉旋转 */
         if (g_chassis.mode == CH_MODE_TURNING) {
-            Scurve_Stop(&g_chassis.rot_planner);
+            Trape_Stop(&g_chassis.rot_planner);
         }
 
         float theta_rad = deg2rad(chassis_theta_deg());
@@ -294,7 +294,7 @@ bool move_to_coordinate(float tx, float ty)
             g_chassis.arrived = true;
         } else {
             /* 里程计标定: 若 scale<1 则电机多转以补偿物理缩水 */
-            Scurve_MoveTo(&g_chassis.trans_planner, d / g_odom_scale);
+            Trape_MoveTo(&g_chassis.trans_planner, d / g_odom_scale);
             g_chassis.mode = CH_MODE_MOVING;
             g_chassis.arrived = false;
         }
@@ -320,7 +320,7 @@ bool headturn(int16_t angle)
     if (target_changed) {
         /* 切换到旋转模式前, 先停掉平移 */
         if (g_chassis.mode == CH_MODE_MOVING) {
-            Scurve_Stop(&g_chassis.trans_planner);
+            Trape_Stop(&g_chassis.trans_planner);
         }
 
         float dtheta = normalize_angle_deg(target - chassis_theta_deg());
@@ -334,7 +334,7 @@ bool headturn(int16_t angle)
             g_chassis.arrived = true;
         } else {
             /* 规划器按"距离(角度差绝对值)"规划, 方向由 rot_dir 体现 */
-            Scurve_MoveTo(&g_chassis.rot_planner, fabsf_local(dtheta));
+            Trape_MoveTo(&g_chassis.rot_planner, fabsf_local(dtheta));
             g_chassis.mode = CH_MODE_TURNING;
             g_chassis.arrived = false;
         }
@@ -351,7 +351,7 @@ void chassis_tick(void)
     switch (g_chassis.mode) {
     case CH_MODE_MOVING: {
         /* S 曲线给出沿 phi 方向的速度(标量, 始终 >= 0) */
-        float v = Scurve_Update(&g_chassis.trans_planner, dt);
+        float v = Trape_Update(&g_chassis.trans_planner, dt);
         vx_b = v * cosf(g_chassis.trans_phi_rad);
         vy_b = v * sinf(g_chassis.trans_phi_rad);
 
@@ -366,7 +366,7 @@ void chassis_tick(void)
         }
 
         /* 到达判定: 规划器空闲 且 实际位置误差足够小 */
-        if (Scurve_IsIdle(&g_chassis.trans_planner)) {
+        if (Trape_IsIdle(&g_chassis.trans_planner)) {
             float ewx = g_chassis.move_tx - g_chassis.x;
             float ewy = g_chassis.move_ty - g_chassis.y;
             float d = sqrtf(ewx * ewx + ewy * ewy);
@@ -392,7 +392,7 @@ void chassis_tick(void)
                 float ebx =  ewx * cosf(theta_rad) + ewy * sinf(theta_rad);
                 float eby = -ewx * sinf(theta_rad) + ewy * cosf(theta_rad);
                 g_chassis.trans_phi_rad = atan2f(eby, ebx);
-                Scurve_MoveTo(&g_chassis.trans_planner, d / g_odom_scale);
+                Trape_MoveTo(&g_chassis.trans_planner, d / g_odom_scale);
                 vx_b = 0.0f;   /* 显式清零，从下一 tick 用新方向 */
                 vy_b = 0.0f;
             }
@@ -401,12 +401,12 @@ void chassis_tick(void)
     }
     case CH_MODE_TURNING: {
         /* S 曲线给出角速度幅值(deg/s, >=0), 乘方向 */
-        float w_deg = Scurve_Update(&g_chassis.rot_planner, dt);
+        float w_deg = Trape_Update(&g_chassis.rot_planner, dt);
         omega = deg2rad(w_deg * g_chassis.rot_dir);
         vx_b = 0.0f;
         vy_b = 0.0f;
 
-        if (Scurve_IsIdle(&g_chassis.rot_planner)) {
+        if (Trape_IsIdle(&g_chassis.rot_planner)) {
             float err = fabsf_local(normalize_angle_deg(g_chassis.turn_target_deg - chassis_theta_deg()));
             if (err < CHASSIS_ANG_TOL_DEG * 2.0f) {
                 g_chassis.mode = CH_MODE_IDLE;
@@ -417,7 +417,7 @@ void chassis_tick(void)
                 /* 没转到位, 重新规划剩余角度 */
                 float dtheta = normalize_angle_deg(g_chassis.turn_target_deg - chassis_theta_deg());
                 g_chassis.rot_dir = (dtheta >= 0.0f) ? 1.0f : -1.0f;
-                Scurve_MoveTo(&g_chassis.rot_planner, fabsf_local(dtheta));
+                Trape_MoveTo(&g_chassis.rot_planner, fabsf_local(dtheta));
             }
         }
         break;

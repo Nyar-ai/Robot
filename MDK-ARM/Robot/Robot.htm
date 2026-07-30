@@ -3,7 +3,7 @@
 <title>Static Call Graph - [Robot\Robot.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Robot\Robot.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Thu Jul 30 13:58:37 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Thu Jul 30 15:52:22 2026
 <BR><P>
 <H3>Maximum Stack Usage =        324 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -107,7 +107,7 @@ Function Pointers
  <LI><a href="#[6b]">StartDefaultTask</a> from freertos.o(i.StartDefaultTask) referenced from freertos.o(i.MX_FREERTOS_Init)
  <LI><a href="#[6d]">StartGyroTask</a> from freertos.o(i.StartGyroTask) referenced from freertos.o(i.MX_FREERTOS_Init)
  <LI><a href="#[d]">SysTick_Handler</a> from cmsis_os2.o(i.SysTick_Handler) referenced from startup_stm32f407xx.o(RESET)
- <LI><a href="#[5f]">SystemInit</a> from system_stm32f4xx_1.o(i.SystemInit) referenced from startup_stm32f407xx.o(.text)
+ <LI><a href="#[5f]">SystemInit</a> from system_stm32f4xx.o(i.SystemInit) referenced from startup_stm32f407xx.o(.text)
  <LI><a href="#[10]">TAMP_STAMP_IRQHandler</a> from startup_stm32f407xx.o(.text) referenced from startup_stm32f407xx.o(RESET)
  <LI><a href="#[26]">TIM1_BRK_TIM9_IRQHandler</a> from startup_stm32f407xx.o(.text) referenced from startup_stm32f407xx.o(RESET)
  <LI><a href="#[29]">TIM1_CC_IRQHandler</a> from startup_stm32f407xx.o(.text) referenced from startup_stm32f407xx.o(RESET)
@@ -720,7 +720,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sputc
 <LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_common
 </UL>
-<BR>[Called By]<UL><LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_uart_log
+<BR>[Called By]<UL><LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_uart_log
 </UL>
 
 <P><STRONG><a name="[1ba]"></a>__aeabi_memcpy</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, rt_memcpy_v6.o(.text))
@@ -766,7 +766,7 @@ Global Symbols
 <LI><a href="#[15e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM2_Init
 <LI><a href="#[15b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM1_Init
 <LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
-<LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
 </UL>
 
 <P><STRONG><a name="[215]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 4 bytes, rt_memclr_w.o(.text), UNUSED)
@@ -792,7 +792,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_errno_addr
 </UL>
-<BR>[Called By]<UL><LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sqrtf
+<BR>[Called By]<UL><LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sqrtf
 <LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sinf
 <LI><a href="#[197]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_cosf
 <LI><a href="#[193]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_atan2f
@@ -1346,7 +1346,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[159]"></a>HAL_GPIO_WritePin</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, stm32f4xx_hal_gpio.o(i.HAL_GPIO_WritePin))
-<BR><BR>[Called By]<UL><LI><a href="#[188]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
+<BR><BR>[Called By]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
 <LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_Init
 <LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
 </UL>
@@ -1584,7 +1584,7 @@ Global Symbols
 <LI><a href="#[112]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_GetSysClockFreq
 <LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<BR>[Called By]<UL><LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
 </UL>
 
 <P><STRONG><a name="[10d]"></a>HAL_RCC_GetClockConfig</STRONG> (Thumb, 54 bytes, Stack size 0 bytes, stm32f4xx_hal_rcc.o(i.HAL_RCC_GetClockConfig))
@@ -1614,7 +1614,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<BR>[Called By]<UL><LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
 </UL>
 
 <P><STRONG><a name="[11c]"></a>HAL_TIMEx_BreakCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f4xx_hal_tim_ex.o(i.HAL_TIMEx_BreakCallback))
@@ -1659,9 +1659,9 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_InitTick
 </UL>
 
-<P><STRONG><a name="[16d]"></a>HAL_TIM_GenerateEvent</STRONG> (Thumb, 38 bytes, Stack size 0 bytes, stm32f4xx_hal_tim.o(i.HAL_TIM_GenerateEvent))
+<P><STRONG><a name="[168]"></a>HAL_TIM_GenerateEvent</STRONG> (Thumb, 38 bytes, Stack size 0 bytes, stm32f4xx_hal_tim.o(i.HAL_TIM_GenerateEvent))
 <BR><BR>[Called By]<UL><LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_Init
-<LI><a href="#[16c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Init
+<LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Init
 </UL>
 
 <P><STRONG><a name="[118]"></a>HAL_TIM_IC_CaptureCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f4xx_hal_tim.o(i.HAL_TIM_IC_CaptureCallback))
@@ -1748,8 +1748,8 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[128]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_CCxChannelCmd
 </UL>
-<BR>[Called By]<UL><LI><a href="#[188]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
-<LI><a href="#[16c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Init
+<BR>[Called By]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
+<LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Init
 </UL>
 
 <P><STRONG><a name="[11b]"></a>HAL_TIM_PeriodElapsedCallback</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, main.o(i.HAL_TIM_PeriodElapsedCallback))
@@ -1775,7 +1775,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_GetError
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Abort
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<BR>[Called By]<UL><LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 </UL>
 
 <P><STRONG><a name="[12c]"></a>HAL_UART_AbortTransmit</STRONG> (Thumb, 98 bytes, Stack size 16 bytes, stm32f4xx_hal_uart.o(i.HAL_UART_AbortTransmit))
@@ -1784,7 +1784,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_GetError
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Abort
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<BR>[Called By]<UL><LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 </UL>
 
 <P><STRONG><a name="[12d]"></a>HAL_UART_ErrorCallback</STRONG> (Thumb, 86 bytes, Stack size 16 bytes, camera_align.o(i.HAL_UART_ErrorCallback))
@@ -1841,7 +1841,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[137]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_Start_Receive_DMA
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<BR>[Called By]<UL><LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 </UL>
 
 <P><STRONG><a name="[138]"></a>HAL_UART_RxCpltCallback</STRONG> (Thumb, 52 bytes, Stack size 8 bytes, camera_align.o(i.HAL_UART_RxCpltCallback))
@@ -1863,7 +1863,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Called By]<UL><LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_uart_log
+<BR>[Called By]<UL><LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_uart_log
 </UL>
 
 <P><STRONG><a name="[13b]"></a>HAL_UART_Transmit_DMA</STRONG> (Thumb, 120 bytes, Stack size 16 bytes, stm32f4xx_hal_uart.o(i.HAL_UART_Transmit_DMA))
@@ -1871,7 +1871,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Start_IT
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<BR>[Called By]<UL><LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 </UL>
 
 <P><STRONG><a name="[132]"></a>HAL_UART_TxCpltCallback</STRONG> (Thumb, 52 bytes, Stack size 8 bytes, camera_align.o(i.HAL_UART_TxCpltCallback))
@@ -1921,11 +1921,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 </UL>
 
-<P><STRONG><a name="[182]"></a>MPU6050_GetTempC</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, mpu6050.o(i.MPU6050_GetTempC))
+<P><STRONG><a name="[17d]"></a>MPU6050_GetTempC</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, mpu6050.o(i.MPU6050_GetTempC))
 <BR><BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 </UL>
 
-<P><STRONG><a name="[186]"></a>MPU6050_GetYaw</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, mpu6050.o(i.MPU6050_GetYaw))
+<P><STRONG><a name="[181]"></a>MPU6050_GetYaw</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, mpu6050.o(i.MPU6050_GetYaw))
 <BR><BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 </UL>
 
@@ -1942,7 +1942,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 </UL>
 
-<P><STRONG><a name="[185]"></a>MPU6050_IntegrateYaw</STRONG> (Thumb, 66 bytes, Stack size 0 bytes, mpu6050.o(i.MPU6050_IntegrateYaw))
+<P><STRONG><a name="[180]"></a>MPU6050_IntegrateYaw</STRONG> (Thumb, 66 bytes, Stack size 0 bytes, mpu6050.o(i.MPU6050_IntegrateYaw))
 <BR><BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 </UL>
 
@@ -2123,7 +2123,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[1a5]"></a>Mecanum_Inverse</STRONG> (Thumb, 64 bytes, Stack size 0 bytes, mecanum.o(i.Mecanum_Inverse))
-<BR><BR>[Called By]<UL><LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<BR><BR>[Called By]<UL><LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
 </UL>
 
 <P><STRONG><a name="[7]"></a>MemManage_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f4xx_it.o(i.MemManage_Handler))
@@ -2140,84 +2140,40 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(RESET)
 </UL>
-<P><STRONG><a name="[1a8]"></a>Scurve_GetPos</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, scurve.o(i.Scurve_GetPos))
-<BR><BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
-</UL>
-
-<P><STRONG><a name="[167]"></a>Scurve_Init</STRONG> (Thumb, 42 bytes, Stack size 0 bytes, scurve.o(i.Scurve_Init))
-<BR><BR>[Calls]<UL><LI><a href="#[168]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_SetConfig
-</UL>
-<BR>[Called By]<UL><LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_init
-<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_init
-</UL>
-
-<P><STRONG><a name="[1a3]"></a>Scurve_IsIdle</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, scurve.o(i.Scurve_IsIdle))
-<BR><BR>[Called By]<UL><LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
-</UL>
-
-<P><STRONG><a name="[169]"></a>Scurve_MoveTo</STRONG> (Thumb, 176 bytes, Stack size 16 bytes, scurve.o(i.Scurve_MoveTo))
-<BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = Scurve_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
-</UL>
-<BR>[Calls]<UL><LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_Stop
-<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sqrtf
-</UL>
-<BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
-<LI><a href="#[17b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_set_height
-</UL>
-
-<P><STRONG><a name="[168]"></a>Scurve_SetConfig</STRONG> (Thumb, 98 bytes, Stack size 0 bytes, scurve.o(i.Scurve_SetConfig))
-<BR><BR>[Called By]<UL><LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_Init
-</UL>
-
-<P><STRONG><a name="[16a]"></a>Scurve_Stop</STRONG> (Thumb, 22 bytes, Stack size 0 bytes, scurve.o(i.Scurve_Stop))
-<BR><BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
-<LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_MoveTo
-</UL>
-
-<P><STRONG><a name="[1a0]"></a>Scurve_Update</STRONG> (Thumb, 340 bytes, Stack size 0 bytes, scurve.o(i.Scurve_Update))
-<BR><BR>[Called By]<UL><LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
-</UL>
-
-<P><STRONG><a name="[16c]"></a>Servo_Init</STRONG> (Thumb, 76 bytes, Stack size 8 bytes, servo.o(i.Servo_Init))
+<P><STRONG><a name="[167]"></a>Servo_Init</STRONG> (Thumb, 76 bytes, Stack size 8 bytes, servo.o(i.Servo_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = Servo_Init &rArr; HAL_TIM_PWM_Start &rArr; TIM_CCxChannelCmd
 </UL>
 <BR>[Calls]<UL><LI><a href="#[127]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_Start
-<LI><a href="#[16d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_GenerateEvent
-<LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_SetAngle
+<LI><a href="#[168]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_GenerateEvent
+<LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_SetAngle
 </UL>
 <BR>[Called By]<UL><LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_init
 </UL>
 
-<P><STRONG><a name="[16e]"></a>Servo_SetAngle</STRONG> (Thumb, 84 bytes, Stack size 0 bytes, servo.o(i.Servo_SetAngle))
-<BR><BR>[Called By]<UL><LI><a href="#[16c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Init
-<LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_rotate_set
-<LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_gripper_open
-<LI><a href="#[179]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_gripper_close
+<P><STRONG><a name="[169]"></a>Servo_SetAngle</STRONG> (Thumb, 84 bytes, Stack size 0 bytes, servo.o(i.Servo_SetAngle))
+<BR><BR>[Called By]<UL><LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Init
+<LI><a href="#[171]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_rotate_set
+<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_gripper_open
+<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_gripper_close
 </UL>
 
 <P><STRONG><a name="[6c]"></a>StartChassisTask</STRONG> (Thumb, 34 bytes, Stack size 24 bytes, freertos.o(i.StartChassisTask))
-<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = StartChassisTask &rArr; chassis_tick &rArr; Scurve_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
+<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = StartChassisTask &rArr; chassis_tick &rArr; Trape_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
 </UL>
-<BR>[Calls]<UL><LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetWheelSpeedAll
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
-<LI><a href="#[171]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_get_wheel_speed
-<LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetTickCount
-<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
+<BR>[Calls]<UL><LI><a href="#[16d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetWheelSpeedAll
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<LI><a href="#[16c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_get_wheel_speed
+<LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetTickCount
+<LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(i.MX_FREERTOS_Init)
 </UL>
 <P><STRONG><a name="[6e]"></a>StartClampTask</STRONG> (Thumb, 22 bytes, Stack size 8 bytes, freertos.o(i.StartClampTask))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = StartClampTask &rArr; clamp_tick &rArr; Stepper_SetSpeed &rArr; HAL_TIM_PWM_Start &rArr; TIM_CCxChannelCmd
 </UL>
-<BR>[Calls]<UL><LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetTickCount
-<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
+<BR>[Calls]<UL><LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetTickCount
+<LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
+<LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(i.MX_FREERTOS_Init)
 </UL>
@@ -2225,19 +2181,19 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 232 + Unknown Stack Size
 <LI>Call Chain = StartDefaultTask &rArr; camera_align_at &rArr; xQueueSemaphoreTake &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[180]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_get_last_raw
-<LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
-<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
-<LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_set_pose
-<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_get_pose
-<LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
-<LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_uart_log
-<LI><a href="#[17b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_set_height
-<LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_rotate_set
-<LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_gripper_open
-<LI><a href="#[179]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_gripper_close
-<LI><a href="#[17e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
+<BR>[Calls]<UL><LI><a href="#[17b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_get_last_raw
+<LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
+<LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_set_pose
+<LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_get_pose
+<LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
+<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_uart_log
+<LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_set_height
+<LI><a href="#[171]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_rotate_set
+<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_gripper_open
+<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_gripper_close
+<LI><a href="#[179]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(i.MX_FREERTOS_Init)
 </UL>
@@ -2246,55 +2202,55 @@ Global Symbols
 <LI>Call Chain = StartGyroTask &rArr; MPU6050_CalibrateYaw &rArr; read_temp_blocking &rArr; read_bytes_blocking &rArr; HAL_I2C_Mem_Read &rArr; I2C_RequestMemoryRead &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MPU6050_StartReadDMA
-<LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MPU6050_IntegrateYaw
+<LI><a href="#[180]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MPU6050_IntegrateYaw
 <LI><a href="#[14d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MPU6050_Init
-<LI><a href="#[186]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MPU6050_GetYaw
-<LI><a href="#[182]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MPU6050_GetTempC
+<LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MPU6050_GetYaw
+<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MPU6050_GetTempC
 <LI><a href="#[147]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MPU6050_CalibrateYaw
-<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-<LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
-<LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_feed_gyro
-<LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetTickCount
-<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
-<LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
-<LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_uart_log
-<LI><a href="#[17e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
+<LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<LI><a href="#[17e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
+<LI><a href="#[182]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_feed_gyro
+<LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetTickCount
+<LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
+<LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
+<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_uart_log
+<LI><a href="#[179]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(i.MX_FREERTOS_Init)
 </UL>
 <P><STRONG><a name="[155]"></a>Stepper_Init</STRONG> (Thumb, 184 bytes, Stack size 24 bytes, stepper.o(i.Stepper_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = Stepper_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[16d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_GenerateEvent
+<BR>[Calls]<UL><LI><a href="#[168]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_GenerateEvent
 <LI><a href="#[159]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
 <BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_FREERTOS_Init
 </UL>
 
-<P><STRONG><a name="[188]"></a>Stepper_SetSpeed</STRONG> (Thumb, 352 bytes, Stack size 24 bytes, stepper.o(i.Stepper_SetSpeed))
+<P><STRONG><a name="[183]"></a>Stepper_SetSpeed</STRONG> (Thumb, 352 bytes, Stack size 24 bytes, stepper.o(i.Stepper_SetSpeed))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = Stepper_SetSpeed &rArr; HAL_TIM_PWM_Start &rArr; TIM_CCxChannelCmd
 </UL>
 <BR>[Calls]<UL><LI><a href="#[127]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_Start
 <LI><a href="#[159]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
-<LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 </UL>
-<BR>[Called By]<UL><LI><a href="#[18b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetWheelSpeed
-<LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
+<BR>[Called By]<UL><LI><a href="#[186]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetWheelSpeed
+<LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
 </UL>
 
-<P><STRONG><a name="[18b]"></a>Stepper_SetWheelSpeed</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stepper.o(i.Stepper_SetWheelSpeed))
+<P><STRONG><a name="[186]"></a>Stepper_SetWheelSpeed</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stepper.o(i.Stepper_SetWheelSpeed))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = Stepper_SetWheelSpeed &rArr; Stepper_SetSpeed &rArr; HAL_TIM_PWM_Start &rArr; TIM_CCxChannelCmd
 </UL>
-<BR>[Calls]<UL><LI><a href="#[188]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
+<BR>[Calls]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
 </UL>
-<BR>[Called By]<UL><LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetWheelSpeedAll
+<BR>[Called By]<UL><LI><a href="#[16d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetWheelSpeedAll
 </UL>
 
-<P><STRONG><a name="[172]"></a>Stepper_SetWheelSpeedAll</STRONG> (Thumb, 32 bytes, Stack size 16 bytes, stepper.o(i.Stepper_SetWheelSpeedAll))
+<P><STRONG><a name="[16d]"></a>Stepper_SetWheelSpeedAll</STRONG> (Thumb, 32 bytes, Stack size 16 bytes, stepper.o(i.Stepper_SetWheelSpeedAll))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = Stepper_SetWheelSpeedAll &rArr; Stepper_SetWheelSpeed &rArr; Stepper_SetSpeed &rArr; HAL_TIM_PWM_Start &rArr; TIM_CCxChannelCmd
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetWheelSpeed
+<BR>[Calls]<UL><LI><a href="#[186]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetWheelSpeed
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartChassisTask
 </UL>
@@ -2302,12 +2258,12 @@ Global Symbols
 <P><STRONG><a name="[d]"></a>SysTick_Handler</STRONG> (Thumb, 26 bytes, Stack size 8 bytes, cmsis_os2.o(i.SysTick_Handler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = SysTick_Handler &rArr; xPortSysTickHandler &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
-<LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xPortSysTickHandler
+<BR>[Calls]<UL><LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
+<LI><a href="#[188]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xPortSysTickHandler
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(RESET)
 </UL>
-<P><STRONG><a name="[18e]"></a>SystemClock_Config</STRONG> (Thumb, 140 bytes, Stack size 88 bytes, main.o(i.SystemClock_Config))
+<P><STRONG><a name="[189]"></a>SystemClock_Config</STRONG> (Thumb, 140 bytes, Stack size 88 bytes, main.o(i.SystemClock_Config))
 <BR><BR>[Stack]<UL><LI>Max Depth = 188<LI>Call Chain = SystemClock_Config &rArr; HAL_RCC_ClockConfig &rArr; HAL_InitTick &rArr; HAL_TIM_Base_Init &rArr; TIM_Base_SetConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_OscConfig
@@ -2317,7 +2273,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[5f]"></a>SystemInit</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, system_stm32f4xx_1.o(i.SystemInit))
+<P><STRONG><a name="[5f]"></a>SystemInit</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, system_stm32f4xx.o(i.SystemInit))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(.text)
 </UL>
 <P><STRONG><a name="[3b]"></a>TIM8_TRG_COM_TIM14_IRQHandler</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, stm32f4xx_it.o(i.TIM8_TRG_COM_TIM14_IRQHandler))
@@ -2344,6 +2300,50 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = TIM_OC2_SetConfig
 </UL>
 <BR>[Called By]<UL><LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_ConfigChannel
+</UL>
+
+<P><STRONG><a name="[1a8]"></a>Trape_GetPos</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, trape.o(i.Trape_GetPos))
+<BR><BR>[Called By]<UL><LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
+</UL>
+
+<P><STRONG><a name="[18a]"></a>Trape_Init</STRONG> (Thumb, 42 bytes, Stack size 0 bytes, trape.o(i.Trape_Init))
+<BR><BR>[Calls]<UL><LI><a href="#[18b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_SetConfig
+</UL>
+<BR>[Called By]<UL><LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_init
+<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_init
+</UL>
+
+<P><STRONG><a name="[1a3]"></a>Trape_IsIdle</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, trape.o(i.Trape_IsIdle))
+<BR><BR>[Called By]<UL><LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
+</UL>
+
+<P><STRONG><a name="[18c]"></a>Trape_MoveTo</STRONG> (Thumb, 176 bytes, Stack size 16 bytes, trape.o(i.Trape_MoveTo))
+<BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = Trape_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
+</UL>
+<BR>[Calls]<UL><LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_Stop
+<LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sqrtf
+</UL>
+<BR>[Called By]<UL><LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
+<LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_set_height
+</UL>
+
+<P><STRONG><a name="[18b]"></a>Trape_SetConfig</STRONG> (Thumb, 98 bytes, Stack size 0 bytes, trape.o(i.Trape_SetConfig))
+<BR><BR>[Called By]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_Init
+</UL>
+
+<P><STRONG><a name="[18d]"></a>Trape_Stop</STRONG> (Thumb, 22 bytes, Stack size 0 bytes, trape.o(i.Trape_Stop))
+<BR><BR>[Called By]<UL><LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
+<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_MoveTo
+</UL>
+
+<P><STRONG><a name="[1a0]"></a>Trape_Update</STRONG> (Thumb, 340 bytes, Stack size 0 bytes, trape.o(i.Trape_Update))
+<BR><BR>[Called By]<UL><LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
 </UL>
 
 <P><STRONG><a name="[137]"></a>UART_Start_Receive_DMA</STRONG> (Thumb, 146 bytes, Stack size 16 bytes, stm32f4xx_hal_uart.o(i.UART_Start_Receive_DMA))
@@ -2388,8 +2388,8 @@ Global Symbols
 <LI><a href="#[196]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__mathlib_flt_infnan2
 <LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__ARM_fpclassifyf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<BR>[Called By]<UL><LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
 </UL>
 
 <P><STRONG><a name="[197]"></a>__hardfp_cosf</STRONG> (Thumb, 280 bytes, Stack size 8 bytes, cosf.o(i.__hardfp_cosf))
@@ -2401,8 +2401,8 @@ Global Symbols
 <LI><a href="#[19a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__mathlib_flt_infnan
 </UL>
 <BR>[Called By]<UL><LI><a href="#[19c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_recover_pose
-<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
 </UL>
 
 <P><STRONG><a name="[19b]"></a>__hardfp_sinf</STRONG> (Thumb, 344 bytes, Stack size 16 bytes, sinf.o(i.__hardfp_sinf))
@@ -2416,18 +2416,18 @@ Global Symbols
 <LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__ARM_fpclassifyf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[19c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_recover_pose
-<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
 </UL>
 
-<P><STRONG><a name="[16b]"></a>__hardfp_sqrtf</STRONG> (Thumb, 58 bytes, Stack size 16 bytes, sqrtf.o(i.__hardfp_sqrtf))
+<P><STRONG><a name="[18e]"></a>__hardfp_sqrtf</STRONG> (Thumb, 58 bytes, Stack size 16 bytes, sqrtf.o(i.__hardfp_sqrtf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = __hardfp_sqrtf &rArr; __set_errno
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__set_errno
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
-<LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_MoveTo
+<BR>[Called By]<UL><LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_MoveTo
 </UL>
 
 <P><STRONG><a name="[19a]"></a>__mathlib_flt_infnan</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, funder.o(i.__mathlib_flt_infnan))
@@ -2460,24 +2460,24 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__printf
 </UL>
 
-<P><STRONG><a name="[17f]"></a>camera_align_at</STRONG> (Thumb, 336 bytes, Stack size 56 bytes, camera_align.o(i.camera_align_at))
+<P><STRONG><a name="[17a]"></a>camera_align_at</STRONG> (Thumb, 336 bytes, Stack size 56 bytes, camera_align.o(i.camera_align_at))
 <BR><BR>[Stack]<UL><LI>Max Depth = 160<LI>Call Chain = camera_align_at &rArr; xQueueSemaphoreTake &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-<LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit_DMA
 <LI><a href="#[136]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Receive_DMA
 <LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_AbortTransmit
 <LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_AbortReceive
 <LI><a href="#[19c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_recover_pose
-<LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_set_pose
-<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_get_pose
+<LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_set_pose
+<LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_get_pose
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
 </UL>
 
-<P><STRONG><a name="[180]"></a>camera_align_get_last_raw</STRONG> (Thumb, 26 bytes, Stack size 8 bytes, camera_align.o(i.camera_align_get_last_raw))
+<P><STRONG><a name="[17b]"></a>camera_align_get_last_raw</STRONG> (Thumb, 26 bytes, Stack size 8 bytes, camera_align.o(i.camera_align_get_last_raw))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = camera_align_get_last_raw
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
@@ -2486,12 +2486,12 @@ Global Symbols
 <P><STRONG><a name="[156]"></a>camera_align_init</STRONG> (Thumb, 50 bytes, Stack size 8 bytes, camera_align.o(i.camera_align_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = camera_align_init &rArr; xQueueGenericCreate &rArr; pvPortMalloc &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
+<BR>[Calls]<UL><LI><a href="#[17e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
 </UL>
 <BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_FREERTOS_Init
 </UL>
 
-<P><STRONG><a name="[187]"></a>chassis_feed_gyro</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, chassis.o(i.chassis_feed_gyro))
+<P><STRONG><a name="[182]"></a>chassis_feed_gyro</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, chassis.o(i.chassis_feed_gyro))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = chassis_feed_gyro
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;normalize_angle_deg
@@ -2499,16 +2499,16 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 </UL>
 
-<P><STRONG><a name="[17d]"></a>chassis_get_pose</STRONG> (Thumb, 40 bytes, Stack size 8 bytes, chassis.o(i.chassis_get_pose))
+<P><STRONG><a name="[178]"></a>chassis_get_pose</STRONG> (Thumb, 40 bytes, Stack size 8 bytes, chassis.o(i.chassis_get_pose))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = chassis_get_pose
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_theta_deg
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<BR>[Called By]<UL><LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 <LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
 </UL>
 
-<P><STRONG><a name="[171]"></a>chassis_get_wheel_speed</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, chassis.o(i.chassis_get_wheel_speed))
+<P><STRONG><a name="[16c]"></a>chassis_get_wheel_speed</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, chassis.o(i.chassis_get_wheel_speed))
 <BR><BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartChassisTask
 </UL>
 
@@ -2516,22 +2516,22 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = chassis_init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;yaw_pid_reset
-<LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_Init
+<LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_Init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_FREERTOS_Init
 </UL>
 
-<P><STRONG><a name="[17a]"></a>chassis_set_pose</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, chassis.o(i.chassis_set_pose))
+<P><STRONG><a name="[175]"></a>chassis_set_pose</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, chassis.o(i.chassis_set_pose))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = chassis_set_pose
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;normalize_angle_deg
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<BR>[Called By]<UL><LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 <LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
 </UL>
 
-<P><STRONG><a name="[170]"></a>chassis_tick</STRONG> (Thumb, 654 bytes, Stack size 56 bytes, chassis.o(i.chassis_tick))
-<BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = chassis_tick &rArr; Scurve_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
+<P><STRONG><a name="[16b]"></a>chassis_tick</STRONG> (Thumb, 654 bytes, Stack size 56 bytes, chassis.o(i.chassis_tick))
+<BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = chassis_tick &rArr; Trape_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;yaw_pid_reset
 <LI><a href="#[1a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;yaw_pid_compute
@@ -2540,10 +2540,10 @@ Global Symbols
 <LI><a href="#[1a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;deg2rad
 <LI><a href="#[19e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_theta_deg
 <LI><a href="#[1a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Mecanum_Inverse
-<LI><a href="#[1a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_Update
-<LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_MoveTo
-<LI><a href="#[1a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_IsIdle
-<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sqrtf
+<LI><a href="#[1a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_Update
+<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_MoveTo
+<LI><a href="#[1a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_IsIdle
+<LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sqrtf
 <LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sinf
 <LI><a href="#[197]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_cosf
 <LI><a href="#[193]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_atan2f
@@ -2551,14 +2551,14 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartChassisTask
 </UL>
 
-<P><STRONG><a name="[179]"></a>clamp_gripper_close</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, clamp.o(i.clamp_gripper_close))
-<BR><BR>[Calls]<UL><LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_SetAngle
+<P><STRONG><a name="[174]"></a>clamp_gripper_close</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, clamp.o(i.clamp_gripper_close))
+<BR><BR>[Calls]<UL><LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_SetAngle
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
 </UL>
 
-<P><STRONG><a name="[178]"></a>clamp_gripper_open</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, clamp.o(i.clamp_gripper_open))
-<BR><BR>[Calls]<UL><LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_SetAngle
+<P><STRONG><a name="[173]"></a>clamp_gripper_open</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, clamp.o(i.clamp_gripper_open))
+<BR><BR>[Calls]<UL><LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_SetAngle
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
 </UL>
@@ -2566,52 +2566,52 @@ Global Symbols
 <P><STRONG><a name="[154]"></a>clamp_init</STRONG> (Thumb, 76 bytes, Stack size 16 bytes, clamp.o(i.clamp_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = clamp_init &rArr; Servo_Init &rArr; HAL_TIM_PWM_Start &rArr; TIM_CCxChannelCmd
 </UL>
-<BR>[Calls]<UL><LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_Init
-<LI><a href="#[16c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Init
+<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_Init
+<LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Init
 <LI><a href="#[1a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mm_to_steps
 </UL>
 <BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_FREERTOS_Init
 </UL>
 
-<P><STRONG><a name="[176]"></a>clamp_rotate_set</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, clamp.o(i.clamp_rotate_set))
-<BR><BR>[Calls]<UL><LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_SetAngle
+<P><STRONG><a name="[171]"></a>clamp_rotate_set</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, clamp.o(i.clamp_rotate_set))
+<BR><BR>[Calls]<UL><LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_SetAngle
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
 </UL>
 
-<P><STRONG><a name="[17b]"></a>clamp_set_height</STRONG> (Thumb, 148 bytes, Stack size 40 bytes, clamp.o(i.clamp_set_height))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = clamp_set_height &rArr; Scurve_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
+<P><STRONG><a name="[176]"></a>clamp_set_height</STRONG> (Thumb, 148 bytes, Stack size 40 bytes, clamp.o(i.clamp_set_height))
+<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = clamp_set_height &rArr; Trape_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
 </UL>
-<BR>[Calls]<UL><LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_MoveTo
+<BR>[Calls]<UL><LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_MoveTo
 <LI><a href="#[1a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mm_to_steps
 <LI><a href="#[1a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fabsf_local
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
 </UL>
 
-<P><STRONG><a name="[174]"></a>clamp_tick</STRONG> (Thumb, 216 bytes, Stack size 40 bytes, clamp.o(i.clamp_tick))
+<P><STRONG><a name="[16f]"></a>clamp_tick</STRONG> (Thumb, 216 bytes, Stack size 40 bytes, clamp.o(i.clamp_tick))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = clamp_tick &rArr; Stepper_SetSpeed &rArr; HAL_TIM_PWM_Start &rArr; TIM_CCxChannelCmd
 </UL>
-<BR>[Calls]<UL><LI><a href="#[188]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
-<LI><a href="#[1a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_Update
-<LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_MoveTo
-<LI><a href="#[1a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_IsIdle
-<LI><a href="#[1a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_GetPos
+<BR>[Calls]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
+<LI><a href="#[1a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_Update
+<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_MoveTo
+<LI><a href="#[1a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_IsIdle
+<LI><a href="#[1a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_GetPos
 <LI><a href="#[1a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;mm_to_steps
 <LI><a href="#[1a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fabsf_local
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartClampTask
 </UL>
 
-<P><STRONG><a name="[181]"></a>headturn</STRONG> (Thumb, 206 bytes, Stack size 24 bytes, chassis.o(i.headturn))
-<BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = headturn &rArr; Scurve_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
+<P><STRONG><a name="[17c]"></a>headturn</STRONG> (Thumb, 206 bytes, Stack size 24 bytes, chassis.o(i.headturn))
+<BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = headturn &rArr; Trape_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;yaw_pid_reset
 <LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;normalize_angle_deg
 <LI><a href="#[1a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fabsf_local
 <LI><a href="#[19e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_theta_deg
-<LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_Stop
-<LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_MoveTo
+<LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_Stop
+<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_MoveTo
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
 </UL>
@@ -2639,21 +2639,21 @@ Global Symbols
 <LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_FREERTOS_Init
 <LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_DMA_Init
 <LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Init
-<LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry_main
 </UL>
 
-<P><STRONG><a name="[17c]"></a>move_to_coordinate</STRONG> (Thumb, 328 bytes, Stack size 40 bytes, chassis.o(i.move_to_coordinate))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = move_to_coordinate &rArr; Scurve_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
+<P><STRONG><a name="[177]"></a>move_to_coordinate</STRONG> (Thumb, 328 bytes, Stack size 40 bytes, chassis.o(i.move_to_coordinate))
+<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = move_to_coordinate &rArr; Trape_MoveTo &rArr; __hardfp_sqrtf &rArr; __set_errno
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;yaw_pid_reset
 <LI><a href="#[1a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fabsf_local
 <LI><a href="#[1a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;deg2rad
 <LI><a href="#[19e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_theta_deg
-<LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_Stop
-<LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Scurve_MoveTo
-<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sqrtf
+<LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_Stop
+<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Trape_MoveTo
+<LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sqrtf
 <LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sinf
 <LI><a href="#[197]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_cosf
 <LI><a href="#[193]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_atan2f
@@ -2661,7 +2661,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
 </UL>
 
-<P><STRONG><a name="[177]"></a>osDelay</STRONG> (Thumb, 26 bytes, Stack size 8 bytes, cmsis_os2.o(i.osDelay))
+<P><STRONG><a name="[172]"></a>osDelay</STRONG> (Thumb, 26 bytes, Stack size 8 bytes, cmsis_os2.o(i.osDelay))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
@@ -2701,12 +2701,12 @@ Global Symbols
 <LI><a href="#[1d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvInsertBlockIntoFreeList
 <LI><a href="#[1d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvHeapInit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
+<BR>[Called By]<UL><LI><a href="#[17e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
 <LI><a href="#[1af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskCreate
 </UL>
 
 <P><STRONG><a name="[1e5]"></a>pvTaskIncrementMutexHeldCount</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, tasks.o(i.pvTaskIncrementMutexHeldCount))
-<BR><BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<BR><BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 </UL>
 
 <P><STRONG><a name="[1c3]"></a>pxPortInitialiseStack</STRONG> (Thumb, 40 bytes, Stack size 8 bytes, port.o(i.pxPortInitialiseStack))
@@ -2768,10 +2768,10 @@ Global Symbols
 <LI><a href="#[1b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvAddCurrentTaskToDelayedList
 </UL>
 
-<P><STRONG><a name="[189]"></a>vPortEnterCritical</STRONG> (Thumb, 54 bytes, Stack size 0 bytes, port.o(i.vPortEnterCritical))
-<BR><BR>[Called By]<UL><LI><a href="#[188]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
-<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-<LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<P><STRONG><a name="[184]"></a>vPortEnterCritical</STRONG> (Thumb, 54 bytes, Stack size 0 bytes, port.o(i.vPortEnterCritical))
+<BR><BR>[Called By]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
+<LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 <LI><a href="#[1e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskCheckForTimeOut
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
@@ -2785,10 +2785,10 @@ Global Symbols
 <LI><a href="#[1b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvAddNewTaskToReadyList
 </UL>
 
-<P><STRONG><a name="[18a]"></a>vPortExitCritical</STRONG> (Thumb, 34 bytes, Stack size 0 bytes, port.o(i.vPortExitCritical))
-<BR><BR>[Called By]<UL><LI><a href="#[188]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
-<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-<LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<P><STRONG><a name="[185]"></a>vPortExitCritical</STRONG> (Thumb, 34 bytes, Stack size 0 bytes, port.o(i.vPortExitCritical))
+<BR><BR>[Called By]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Stepper_SetSpeed
+<LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 <LI><a href="#[1e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskCheckForTimeOut
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
@@ -2836,8 +2836,8 @@ Global Symbols
 <P><STRONG><a name="[1cd]"></a>vQueueWaitForMessageRestricted</STRONG> (Thumb, 68 bytes, Stack size 16 bytes, queue.o(i.vQueueWaitForMessageRestricted))
 <BR><BR>[Stack]<UL><LI>Max Depth = 68<LI>Call Chain = vQueueWaitForMessageRestricted &rArr; vTaskPlaceOnEventListRestricted &rArr; prvAddCurrentTaskToDelayedList &rArr; vListInsert
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventListRestricted
 <LI><a href="#[1cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvUnlockQueue
 </UL>
@@ -2851,10 +2851,10 @@ Global Symbols
 <LI><a href="#[1cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskSuspendAll
 <LI><a href="#[1b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvAddCurrentTaskToDelayedList
 </UL>
-<BR>[Called By]<UL><LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
+<BR>[Called By]<UL><LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 </UL>
 
-<P><STRONG><a name="[173]"></a>vTaskDelayUntil</STRONG> (Thumb, 132 bytes, Stack size 16 bytes, tasks.o(i.vTaskDelayUntil))
+<P><STRONG><a name="[16e]"></a>vTaskDelayUntil</STRONG> (Thumb, 132 bytes, Stack size 16 bytes, tasks.o(i.vTaskDelayUntil))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = vTaskDelayUntil &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskResumeAll
@@ -2867,7 +2867,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[1e2]"></a>vTaskInternalSetTimeOutState</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, tasks.o(i.vTaskInternalSetTimeOutState))
-<BR><BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<BR><BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 <LI><a href="#[1e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskCheckForTimeOut
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
@@ -2883,7 +2883,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[1b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInsert
 <LI><a href="#[1b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvAddCurrentTaskToDelayedList
 </UL>
-<BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 </UL>
@@ -2903,7 +2903,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[1b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInsertEnd
 <LI><a href="#[1b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxListRemove
 </UL>
-<BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 </UL>
 
 <P><STRONG><a name="[1ad]"></a>vTaskStartScheduler</STRONG> (Thumb, 118 bytes, Stack size 40 bytes, tasks.o(i.vTaskStartScheduler))
@@ -2919,8 +2919,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[1cb]"></a>vTaskSuspendAll</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, tasks.o(i.vTaskSuspendAll))
-<BR><BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
+<BR><BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[1be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortFree
@@ -2945,7 +2945,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[1ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskStartScheduler
 </UL>
 
-<P><STRONG><a name="[18d]"></a>xPortSysTickHandler</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, port.o(i.xPortSysTickHandler))
+<P><STRONG><a name="[188]"></a>xPortSysTickHandler</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, port.o(i.xPortSysTickHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = xPortSysTickHandler &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskIncrementTick
@@ -2953,7 +2953,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysTick_Handler
 </UL>
 
-<P><STRONG><a name="[183]"></a>xQueueGenericCreate</STRONG> (Thumb, 66 bytes, Stack size 24 bytes, queue.o(i.xQueueGenericCreate))
+<P><STRONG><a name="[17e]"></a>xQueueGenericCreate</STRONG> (Thumb, 66 bytes, Stack size 24 bytes, queue.o(i.xQueueGenericCreate))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = xQueueGenericCreate &rArr; pvPortMalloc &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvInitialiseNewQueue
@@ -2974,8 +2974,8 @@ Global Symbols
 <P><STRONG><a name="[1c0]"></a>xQueueGenericReset</STRONG> (Thumb, 132 bytes, Stack size 16 bytes, queue.o(i.xQueueGenericReset))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = xQueueGenericReset &rArr; xTaskRemoveFromEventList
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskRemoveFromEventList
 <LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInitialise
 </UL>
@@ -2985,8 +2985,8 @@ Global Symbols
 <P><STRONG><a name="[1e1]"></a>xQueueGenericSend</STRONG> (Thumb, 346 bytes, Stack size 56 bytes, queue.o(i.xQueueGenericSend))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskRemoveFromEventList
 <LI><a href="#[1e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskCheckForTimeOut
 <LI><a href="#[1d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventList
@@ -2994,7 +2994,7 @@ Global Symbols
 <LI><a href="#[1cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvUnlockQueue
 <LI><a href="#[1bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvCopyDataToQueue
 <LI><a href="#[1cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskResumeAll
-<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
+<LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
 <LI><a href="#[1cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskSuspendAll
 </UL>
 <BR>[Called By]<UL><LI><a href="#[1c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTimerGenericCommand
@@ -3025,8 +3025,8 @@ Global Symbols
 <P><STRONG><a name="[1c9]"></a>xQueueReceive</STRONG> (Thumb, 308 bytes, Stack size 56 bytes, queue.o(i.xQueueReceive))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = xQueueReceive &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskRemoveFromEventList
 <LI><a href="#[1e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskCheckForTimeOut
 <LI><a href="#[1d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventList
@@ -3035,17 +3035,17 @@ Global Symbols
 <LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvIsQueueEmpty
 <LI><a href="#[1b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvCopyDataFromQueue
 <LI><a href="#[1cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskResumeAll
-<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
+<LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
 <LI><a href="#[1cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskSuspendAll
 </UL>
 <BR>[Called By]<UL><LI><a href="#[1c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvProcessReceivedCommands
 </UL>
 
-<P><STRONG><a name="[184]"></a>xQueueSemaphoreTake</STRONG> (Thumb, 372 bytes, Stack size 48 bytes, queue.o(i.xQueueSemaphoreTake))
+<P><STRONG><a name="[17f]"></a>xQueueSemaphoreTake</STRONG> (Thumb, 372 bytes, Stack size 48 bytes, queue.o(i.xQueueSemaphoreTake))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = xQueueSemaphoreTake &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskRemoveFromEventList
 <LI><a href="#[1e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskPriorityInherit
 <LI><a href="#[1e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskCheckForTimeOut
@@ -3056,21 +3056,21 @@ Global Symbols
 <LI><a href="#[1cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvUnlockQueue
 <LI><a href="#[1c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvIsQueueEmpty
 <LI><a href="#[1cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskResumeAll
-<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
+<LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
 <LI><a href="#[1cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskSuspendAll
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<BR>[Called By]<UL><LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 <LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 </UL>
 
 <P><STRONG><a name="[1e3]"></a>xTaskCheckForTimeOut</STRONG> (Thumb, 112 bytes, Stack size 24 bytes, tasks.o(i.xTaskCheckForTimeOut))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = xTaskCheckForTimeOut
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskInternalSetTimeOutState
 </UL>
-<BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 </UL>
@@ -3099,15 +3099,15 @@ Global Symbols
 <LI><a href="#[1ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskStartScheduler
 </UL>
 
-<P><STRONG><a name="[18c]"></a>xTaskGetSchedulerState</STRONG> (Thumb, 22 bytes, Stack size 0 bytes, tasks.o(i.xTaskGetSchedulerState))
-<BR><BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<P><STRONG><a name="[187]"></a>xTaskGetSchedulerState</STRONG> (Thumb, 22 bytes, Stack size 0 bytes, tasks.o(i.xTaskGetSchedulerState))
+<BR><BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[1c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTimerGenericCommand
 <LI><a href="#[d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysTick_Handler
 </UL>
 
-<P><STRONG><a name="[16f]"></a>xTaskGetTickCount</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, tasks.o(i.xTaskGetTickCount))
+<P><STRONG><a name="[16a]"></a>xTaskGetTickCount</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, tasks.o(i.xTaskGetTickCount))
 <BR><BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 <LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartClampTask
 <LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartChassisTask
@@ -3122,7 +3122,7 @@ Global Symbols
 <LI><a href="#[1e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvResetNextTaskUnblockTime
 </UL>
 <BR>[Called By]<UL><LI><a href="#[1cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskResumeAll
-<LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xPortSysTickHandler
+<LI><a href="#[188]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xPortSysTickHandler
 </UL>
 
 <P><STRONG><a name="[1bc]"></a>xTaskPriorityDisinherit</STRONG> (Thumb, 118 bytes, Stack size 16 bytes, tasks.o(i.xTaskPriorityDisinherit))
@@ -3140,7 +3140,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[1b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInsertEnd
 <LI><a href="#[1b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxListRemove
 </UL>
-<BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 </UL>
 
 <P><STRONG><a name="[1d0]"></a>xTaskRemoveFromEventList</STRONG> (Thumb, 98 bytes, Stack size 16 bytes, tasks.o(i.xTaskRemoveFromEventList))
@@ -3149,7 +3149,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[1b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInsertEnd
 <LI><a href="#[1b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxListRemove
 </UL>
-<BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 <LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGiveFromISR
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSendFromISR
@@ -3161,15 +3161,15 @@ Global Symbols
 <P><STRONG><a name="[1cc]"></a>xTaskResumeAll</STRONG> (Thumb, 182 bytes, Stack size 32 bytes, tasks.o(i.xTaskResumeAll))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInsertEnd
 <LI><a href="#[1b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxListRemove
 <LI><a href="#[1e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskIncrementTick
 <LI><a href="#[1e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvResetNextTaskUnblockTime
 </UL>
-<BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-<LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
+<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[1be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortFree
@@ -3194,7 +3194,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSendFromISR
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
-<LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
+<LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetSchedulerState
 </UL>
 <BR>[Called By]<UL><LI><a href="#[1ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvSwitchTimerLists
 <LI><a href="#[1ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvProcessTimerOrBlockTask
@@ -3222,7 +3222,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[1ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_f2d
 </UL>
 
-<P><STRONG><a name="[17e]"></a>__aeabi_f2d</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, f2d.o(x$fpl$f2d))
+<P><STRONG><a name="[179]"></a>__aeabi_f2d</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, f2d.o(x$fpl$f2d))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = __aeabi_f2d
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
@@ -3270,39 +3270,39 @@ Local Symbols
 <P><STRONG><a name="[19e]"></a>chassis_theta_deg</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, chassis.o(i.chassis_theta_deg))
 <BR><BR>[Calls]<UL><LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;normalize_angle_deg
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
-<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_get_pose
+<BR>[Called By]<UL><LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_get_pose
 </UL>
 
 <P><STRONG><a name="[1a2]"></a>deg2rad</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, chassis.o(i.deg2rad))
-<BR><BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<BR><BR>[Called By]<UL><LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
 </UL>
 
 <P><STRONG><a name="[1a4]"></a>fabsf_local</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, chassis.o(i.fabsf_local))
-<BR><BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<BR><BR>[Called By]<UL><LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
 </UL>
 
 <P><STRONG><a name="[19d]"></a>normalize_angle_deg</STRONG> (Thumb, 40 bytes, Stack size 0 bytes, chassis.o(i.normalize_angle_deg))
-<BR><BR>[Called By]<UL><LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
-<LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_set_pose
-<LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_feed_gyro
+<BR><BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<LI><a href="#[175]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_set_pose
+<LI><a href="#[182]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_feed_gyro
 <LI><a href="#[19e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_theta_deg
 </UL>
 
 <P><STRONG><a name="[1a1]"></a>yaw_pid_compute</STRONG> (Thumb, 140 bytes, Stack size 0 bytes, chassis.o(i.yaw_pid_compute))
-<BR><BR>[Called By]<UL><LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<BR><BR>[Called By]<UL><LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
 </UL>
 
 <P><STRONG><a name="[19f]"></a>yaw_pid_reset</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, chassis.o(i.yaw_pid_reset))
-<BR><BR>[Called By]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
-<LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
-<LI><a href="#[170]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
+<BR><BR>[Called By]<UL><LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;move_to_coordinate
+<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;headturn
+<LI><a href="#[16b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_tick
 <LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_init
 </UL>
 
@@ -3312,7 +3312,7 @@ Local Symbols
 <BR>[Calls]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sinf
 <LI><a href="#[197]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_cosf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
+<BR>[Called By]<UL><LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;camera_align_at
 </UL>
 
 <P><STRONG><a name="[149]"></a>parse_raw</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, mpu6050.o(i.parse_raw))
@@ -3357,17 +3357,17 @@ Local Symbols
 </UL>
 
 <P><STRONG><a name="[1a7]"></a>fabsf_local</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, clamp.o(i.fabsf_local))
-<BR><BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
-<LI><a href="#[17b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_set_height
+<BR><BR>[Called By]<UL><LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
+<LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_set_height
 </UL>
 
 <P><STRONG><a name="[1a6]"></a>mm_to_steps</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, clamp.o(i.mm_to_steps))
-<BR><BR>[Called By]<UL><LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
-<LI><a href="#[17b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_set_height
+<BR><BR>[Called By]<UL><LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_tick
+<LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_set_height
 <LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clamp_init
 </UL>
 
-<P><STRONG><a name="[175]"></a>chassis_uart_log</STRONG> (Thumb, 44 bytes, Stack size 24 bytes, freertos.o(i.chassis_uart_log))
+<P><STRONG><a name="[170]"></a>chassis_uart_log</STRONG> (Thumb, 44 bytes, Stack size 24 bytes, freertos.o(i.chassis_uart_log))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152 + Unknown Stack Size
 <LI>Call Chain = chassis_uart_log &rArr; vsnprintf &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -3737,29 +3737,29 @@ Local Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReset
 </UL>
-<BR>[Called By]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
+<BR>[Called By]<UL><LI><a href="#[17e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
 <LI><a href="#[1b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreateStatic
 </UL>
 
 <P><STRONG><a name="[1c5]"></a>prvIsQueueEmpty</STRONG> (Thumb, 28 bytes, Stack size 8 bytes, queue.o(i.prvIsQueueEmpty))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = prvIsQueueEmpty
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 </UL>
-<BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 </UL>
 
 <P><STRONG><a name="[1cf]"></a>prvUnlockQueue</STRONG> (Thumb, 106 bytes, Stack size 24 bytes, queue.o(i.prvUnlockQueue))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = prvUnlockQueue &rArr; xTaskRemoveFromEventList
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskRemoveFromEventList
 <LI><a href="#[1d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskMissedYield
 </UL>
-<BR>[Called By]<UL><LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
+<BR>[Called By]<UL><LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
 <LI><a href="#[1c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[1e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[1cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vQueueWaitForMessageRestricted
@@ -3772,7 +3772,7 @@ Local Symbols
 <LI><a href="#[1b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInsert
 <LI><a href="#[1b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxListRemove
 </UL>
-<BR>[Called By]<UL><LI><a href="#[173]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
+<BR>[Called By]<UL><LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelayUntil
 <LI><a href="#[1d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventListRestricted
 <LI><a href="#[1d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskPlaceOnEventList
 <LI><a href="#[1ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
@@ -3781,8 +3781,8 @@ Local Symbols
 <P><STRONG><a name="[1b4]"></a>prvAddNewTaskToReadyList</STRONG> (Thumb, 190 bytes, Stack size 24 bytes, tasks.o(i.prvAddNewTaskToReadyList))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = prvAddNewTaskToReadyList
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInsertEnd
 <LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInitialise
 </UL>
@@ -3801,8 +3801,8 @@ Local Symbols
 <P><STRONG><a name="[72]"></a>prvIdleTask</STRONG> (Thumb, 82 bytes, Stack size 0 bytes, tasks.o(i.prvIdleTask))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = prvIdleTask &rArr; prvDeleteTCB &rArr; vPortFree &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uxListRemove
 <LI><a href="#[1bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvDeleteTCB
 </UL>
@@ -3828,8 +3828,8 @@ Local Symbols
 <P><STRONG><a name="[1b6]"></a>prvCheckForValidListAndQueue</STRONG> (Thumb, 72 bytes, Stack size 16 bytes, timers.o(i.prvCheckForValidListAndQueue))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = prvCheckForValidListAndQueue &rArr; xQueueGenericCreateStatic &rArr; prvInitialiseNewQueue &rArr; xQueueGenericReset &rArr; xTaskRemoveFromEventList
 </UL>
-<BR>[Calls]<UL><LI><a href="#[18a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
-<LI><a href="#[189]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortExitCritical
+<LI><a href="#[184]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vPortEnterCritical
 <LI><a href="#[1b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreateStatic
 <LI><a href="#[1b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vQueueAddToRegistry
 <LI><a href="#[1b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vListInitialise
@@ -3876,7 +3876,7 @@ Local Symbols
 <P><STRONG><a name="[1c7]"></a>prvSampleTimeNow</STRONG> (Thumb, 36 bytes, Stack size 16 bytes, timers.o(i.prvSampleTimeNow))
 <BR><BR>[Stack]<UL><LI>Max Depth = 192<LI>Call Chain = prvSampleTimeNow &rArr; prvSwitchTimerLists &rArr; xTimerGenericCommand &rArr; xQueueGenericSend &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[16f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetTickCount
+<BR>[Calls]<UL><LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xTaskGetTickCount
 <LI><a href="#[1ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvSwitchTimerLists
 </UL>
 <BR>[Called By]<UL><LI><a href="#[1ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvProcessTimerOrBlockTask

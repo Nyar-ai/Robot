@@ -223,7 +223,7 @@ void StartDefaultTask(void *argument)
       if (clamp_set_height(0.0f))
       {
         chassis_uart_log("[clamp] down done\r\n");
-        state = DS_DONE;
+        state = STATE_MOVE1;
       }
       break;
     }
