@@ -57,7 +57,7 @@ void Servo_Init(void)
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 
     /* 初始安全角度 */
-    Servo_SetAngle(SERVO_GRIPPER, 180);   /* 夹爪张开 */
+    Servo_SetAngle(SERVO_GRIPPER, CLAMP_GRIPPER_OPEN_DEG);   /* 夹爪张开 */
     Servo_SetAngle(SERVO_ROTATE,   CLAMP_ROTATE_ZERO_DEG);  /* 旋转起始方向 (逻辑零点) */
 }
 

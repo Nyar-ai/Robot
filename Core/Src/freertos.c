@@ -201,7 +201,7 @@ void StartDefaultTask(void *argument)
     STATE_MOVE8,
     STATE_TURN3,
     DS_DONE
-  } state = STATE_MOVE1;
+  } state = DS_DONE;
   for (;;)
   {
     switch (state)

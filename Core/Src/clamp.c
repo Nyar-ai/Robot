@@ -195,12 +195,12 @@ void clamp_set_height_now(float pos_mm)
 
 void clamp_gripper_open(void)
 {
-    Servo_SetAngle(SERVO_GRIPPER, 180);
+    Servo_SetAngle(SERVO_GRIPPER, CLAMP_GRIPPER_OPEN_DEG);
 }
 
 void clamp_gripper_close(void)
 {
-    Servo_SetAngle(SERVO_GRIPPER, 0);
+    Servo_SetAngle(SERVO_GRIPPER, CLAMP_GRIPPER_CLOSE_DEG);
 }
 
 void clamp_rotate_set(int16_t deg)
