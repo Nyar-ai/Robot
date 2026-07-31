@@ -122,7 +122,7 @@ bool camera_color_detect(uint8_t *out_color,
     g_last_my    = my;
 
     if (color == CAM_COLOR_NONE) {
-        return false;   /* 摄像头明确报告"未检测到色块" */
+        return false;   /* 摄像头明确报告"未检测到色块"(无/红/黄/蓝/白/黑) */
     }
 
     if (out_color) *out_color = color;

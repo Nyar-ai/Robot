@@ -18,6 +18,8 @@ white = LED(4)                             # 照明灯
 red_threshold    = ((25, 90, 25, 127, -10, 30))      # 红色
 yellow_threshold = ((45, 100, -20, 20, 30, 80))      # 黄色
 blue_threshold   = ((15, 80, -20, 15, -80, -25))     # 蓝色
+white_threshold  = ((70, 100, -20, 20, -15, 20))     # 白色 (L高, A/B近0)
+black_threshold  = ((0,  30,  -15, 15, -15, 15))     # 黑色 (L低, A/B近0)
 MIN_AREA = 80    # 最小面积阈值，过滤噪声
 
 clock = time.clock()
@@ -38,7 +40,7 @@ def find_max(blobs):
 # ========== 发送应答帧（8字节，与十字检测协议一致）==========
 def send_response(status, mx, my):
     """
-    status: 0=未检测到, 1=红, 2=黄, 3=蓝
+    status: 0=未检测到, 1=红, 2=黄, 3=蓝, 4=白, 5=黑
     mx, my: 色块中心像素坐标 (uint16)
     帧格式: [0xAA, 0x55, STATUS, MX_L, MX_H, MY_L, MY_H, XOR]  共8字节
     """
@@ -97,10 +99,10 @@ while(True):
         try:
             img = sensor.snapshot()
             
-            # 三色识别（选面积最大的色块作为"突出色块"）
-            candidates = []    # (color_id, blob)，color_id: 1=红, 2=黄, 3=蓝
-            colors = ((255, 0, 0), (255, 255, 0), (0, 0, 255))
-            labels = ("R", "Y", "B")
+            # 五色识别（选面积最大的色块作为"突出色块"）
+            candidates = []    # (color_id, blob)，color_id: 1=红, 2=黄, 3=蓝, 4=白, 5=黑
+            colors = ((255, 0, 0), (255, 255, 0), (0, 0, 255), (255, 255, 255), (0, 0, 0))
+            labels = ("R", "Y", "B", "W", "K")
             
             for b in img.find_blobs([red_threshold], merge=True):
                 if b.pixels() >= MIN_AREA:
@@ -111,6 +113,12 @@ while(True):
             for b in img.find_blobs([blue_threshold], merge=True):
                 if b.pixels() >= MIN_AREA:
                     candidates.append((3, b))     # 3=蓝
+            for b in img.find_blobs([white_threshold], merge=True):
+                if b.pixels() >= MIN_AREA:
+                    candidates.append((4, b))     # 4=白
+            for b in img.find_blobs([black_threshold], merge=True):
+                if b.pixels() >= MIN_AREA:
+                    candidates.append((5, b))     # 5=黑
             
             if candidates:
                 best = max(candidates, key=lambda x: x[1].pixels())

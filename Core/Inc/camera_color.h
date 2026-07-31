@@ -10,7 +10,7 @@
  * 通讯模型(与 camera_align 完全一致):
  *   STM32 → K230:  [0xAA][0x55][ID]                                      (3 字节请求)
  *   K230  → STM32: [0xAA][0x55][COLOR][MX_L][MX_H][MY_L][MY_H][XOR]     (8 字节应答)
- *     COLOR: 0 = 未检测到, 1 = 红, 2 = 黄, 3 = 蓝
+ *     COLOR: 0 = 未检测到, 1 = 红, 2 = 黄, 3 = 蓝, 4 = 白, 5 = 黑
  *     MX/MY: uint16 色块中心像素坐标(小端)
  *     XOR  : 前 7 字节异或校验
  *
@@ -30,7 +30,7 @@
     uint16_t mx, my;
     bool ok = camera_color_detect(&color, &mx, &my, 500);
     if (ok) {
-        // color: 1=红, 2=黄, 3=蓝
+        // color: 1=红, 2=黄, 3=蓝, 4=白, 5=黑
         // mx, my 为色块在图像中的像素坐标
     }
 }
@@ -46,6 +46,8 @@
 #define CAM_COLOR_RED      1    /* 红色                */
 #define CAM_COLOR_YELLOW   2    /* 黄色                */
 #define CAM_COLOR_BLUE     3    /* 蓝色                */
+#define CAM_COLOR_WHITE    4    /* 白色                */
+#define CAM_COLOR_BLACK    5    /* 黑色                */
 
 /* ==================== 通讯协议宏 ==================== */
 #define CAM_COLOR_REQ_LEN           3   /* 请求帧长度: [AA 55 ID]                  */
@@ -72,7 +74,7 @@ void camera_color_init(void);
  *   2. 等待摄像头应答 [AA 55 COLOR MX_L MX_H MY_L MY_H XOR]
  *   3. 校验通过 → 解析颜色编号和像素坐标
  *
- * @param out_color   输出: 检测到的颜色 (0=无, 1=红, 2=黄, 3=蓝)
+ * @param out_color   输出: 检测到的颜色 (0=无, 1=红, 2=黄, 3=蓝, 4=白, 5=黑)
  * @param out_mx      输出: 色块中心 x 像素坐标
  * @param out_my      输出: 色块中心 y 像素坐标
  * @param timeout_ms  等待应答超时(ms), 0 表示用默认值
