@@ -17,13 +17,15 @@
 
 /* ==================== 内部状态 ==================== */
 
-/* DMA 收/发完成信号量(任务与中断同步) */
-static SemaphoreHandle_t g_cam_tx_sem = NULL;
-static SemaphoreHandle_t g_cam_rx_sem = NULL;
+/* DMA 收/发完成信号量(任务与中断同步)
+ * 非 static, 供 usart.c 中 HAL 回调 extern 引用 */
+SemaphoreHandle_t g_cam_tx_sem = NULL;
+SemaphoreHandle_t g_cam_rx_sem = NULL;
 
-/* 标记一次收/发是否"正在进行"(避免误释放信号量) */
-static volatile bool g_tx_busy = false;
-static volatile bool g_rx_busy = false;
+/* 标记一次收/发是否"正在进行"(避免误释放信号量)
+ * 非 static, 供 usart.c 中 HAL 回调 extern 引用 */
+volatile bool g_cam_tx_busy = false;
+volatile bool g_cam_rx_busy = false;
 
 /* 发送/接收缓冲(DMA 用, 静态分配) */
 static uint8_t g_tx_buf[CAM_REQ_LEN];
@@ -83,8 +85,8 @@ void camera_align_init(void)
 {
     if (g_cam_tx_sem == NULL) g_cam_tx_sem = xSemaphoreCreateBinary();
     if (g_cam_rx_sem == NULL) g_cam_rx_sem = xSemaphoreCreateBinary();
-    g_tx_busy = false;
-    g_rx_busy = false;
+    g_cam_tx_busy = false;
+    g_cam_rx_busy = false;
     g_last_dx_px = 0;
     g_last_dy_px = 0;
     g_last_status = 0;
@@ -107,27 +109,27 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
     /* ---- 2. 先启动 DMA 接收(收满 8 字节应答) ---- */
     /* 在发送请求之前启动接收, 避免发送完成到接收启动之间的竞态窗口
      * 导致应答首字节丢失. USART2 全双工, TX/RX DMA 独立工作, 可同时进行. */
-    g_rx_busy = true;
+    g_cam_rx_busy = true;
     HAL_StatusTypeDef st = HAL_UART_Receive_DMA(&huart2, g_rx_buf, CAM_ACK_LEN);
     if (st != HAL_OK) {
-        g_rx_busy = false;
+        g_cam_rx_busy = false;
         return false;
     }
 
     /* ---- 3. 启动 DMA 发送请求 ---- */
-    g_tx_busy = true;
+    g_cam_tx_busy = true;
     st = HAL_UART_Transmit_DMA(&huart2, g_tx_buf, CAM_REQ_LEN);
     if (st != HAL_OK) {
-        g_tx_busy = false;
-        g_rx_busy = false;
+        g_cam_tx_busy = false;
+        g_cam_rx_busy = false;
         HAL_UART_AbortReceive(&huart2);
         return false;
     }
 
     /* ---- 4. 等待发送完成(DMA TC → HAL_UART_TxCpltCallback → 释放信号量) ---- */
     if (xSemaphoreTake(g_cam_tx_sem, pdMS_TO_TICKS(100)) != pdTRUE) {
-        g_tx_busy = false;
-        g_rx_busy = false;
+        g_cam_tx_busy = false;
+        g_cam_rx_busy = false;
         /* 发送超时, 中止 DMA 传输, 并清除 UART 残留错误标志,
          * 防止 HAL 因 ORE/FE/NE 未清除而在 Abort 内部卡死 */
         HAL_UART_AbortTransmit(&huart2);
@@ -135,11 +137,11 @@ bool camera_align_at(uint8_t id, float cross_wx, float cross_wy, uint32_t timeou
         __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_ORE | UART_FLAG_FE | UART_FLAG_NE | UART_FLAG_PE);
         return false;
     }
-    g_tx_busy = false;
+    g_cam_tx_busy = false;
 
     /* ---- 5. 等待接收完成(DMA 收满 → HAL_UART_RxCpltCallback → 释放信号量) ---- */
     bool rx_ok = (xSemaphoreTake(g_cam_rx_sem, pdMS_TO_TICKS(timeout_ms)) == pdTRUE);
-    g_rx_busy = false;
+    g_cam_rx_busy = false;
     if (!rx_ok) {
         /* 接收超时, 中止 DMA 并清除 UART 残留错误标志 */
         HAL_UART_AbortReceive(&huart2);
@@ -195,54 +197,7 @@ void camera_align_get_last_raw(int16_t *dx_px, int16_t *dy_px, uint8_t *status)
     if (status)  *status  = g_last_status;
 }
 
-/* ==================== HAL UART 回调(运行在中断上下文, 保持简短) ==================== */
-
-/* HAL 在 DMA 发送完成后调用本函数. 这里释放信号量唤醒 camera_align_at. */
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART2) {
-        BaseType_t hpw = pdFALSE;
-        if (g_cam_tx_sem != NULL) {
-            xSemaphoreGiveFromISR(g_cam_tx_sem, &hpw);
-            portYIELD_FROM_ISR(hpw);
-        }
-    }
-}
-
-/* HAL 在 DMA 接收收满后调用本函数. 这里释放信号量唤醒 camera_align_at. */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART2) {
-        BaseType_t hpw = pdFALSE;
-        if (g_cam_rx_sem != NULL) {
-            xSemaphoreGiveFromISR(g_cam_rx_sem, &hpw);
-            portYIELD_FROM_ISR(hpw);
-        }
-    }
-}
-
-/* UART 错误(帧错/过冲/噪声等): 先清除硬件错误标志, 再释放信号量唤醒上层处理.
- * 关键: 必须先清除 ORE/FE/NE/PE 标志再释放信号量, 否则上层 Abort 时
- *       HAL 内部可能因检测到未清除的错误标志而陷入死循环. */
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART2) {
-        /* 1. 先清除 UART 硬件错误标志, 防止后续 Abort 操作中 HAL 状态机卡死 */
-        __HAL_UART_CLEAR_FLAG(huart, UART_FLAG_ORE | UART_FLAG_FE | UART_FLAG_NE | UART_FLAG_PE);
-
-        /* 2. 释放信号量唤醒上层任务, 让它走超时/重试路径 */
-        BaseType_t hpw = pdFALSE;
-        bool woke = false;
-        if (g_rx_busy && g_cam_rx_sem != NULL) {
-            xSemaphoreGiveFromISR(g_cam_rx_sem, &hpw);
-            woke = true;
-        }
-        if (g_tx_busy && g_cam_tx_sem != NULL) {
-            xSemaphoreGiveFromISR(g_cam_tx_sem, &hpw);
-            woke = true;
-        }
-        if (woke) {
-            portYIELD_FROM_ISR(hpw);
-        }
-    }
-}
+/* HAL 回调(TxCpltCallback / RxCpltCallback / ErrorCallback)
+ * 已统一迁移到 usart.c 中, 同时处理 USART2(十字校准) 和 USART3(颜色检测).
+ * g_cam_tx_sem / g_cam_rx_sem / g_cam_tx_busy / g_cam_rx_busy 对外 extern,
+ * 供 usart.c 中 HAL 回调使用. */

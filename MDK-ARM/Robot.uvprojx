@@ -540,6 +540,16 @@
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32f4xx_hal_timebase_tim.c</FilePath>
             </File>
+            <File>
+              <FileName>camera_color.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\camera_color.c</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f4xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\system_stm32f4xx.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -639,13 +649,6 @@
         </Group>
         <Group>
           <GroupName>Drivers/CMSIS</GroupName>
-          <Files>
-            <File>
-              <FileName>system_stm32f4xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/system_stm32f4xx.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>Middlewares/FreeRTOS</GroupName>

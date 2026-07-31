@@ -34,3 +34,15 @@ robot\usart.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h
 robot\usart.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 robot\usart.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 robot\usart.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
+robot\usart.o: ../Core/Inc/FreeRTOSConfig.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
+robot\usart.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
+robot\usart.o: D:\kail5\ARM\ARMCC\Bin\..\include\stdbool.h
