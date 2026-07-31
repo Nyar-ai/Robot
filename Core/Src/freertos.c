@@ -31,6 +31,7 @@
 #include "mpu6050.h"
 #include "usart.h"
 #include "camera_align.h"
+#include "camera_color.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -118,6 +119,7 @@ void MX_FREERTOS_Init(void) {
   clamp_init();        /* 夹具控制层(带轮步进电机梯形曲线规划器) */
   Stepper_Init();      /* 配置 5 个步进定时器(Prescaler/ARR/占空比), 不立即转 */
   camera_align_init(); /* 摄像头地标校准模块(USART2 + DMA + 信号量) */
+  camera_color_init(); /* 摄像头颜色检测模块(USART3 + DMA + 信号量) */
   /* MPU6050 初始化放在 gyroTask 里(因为它需要 HAL_Delay, 不能在内核启动前调) */
   /* USER CODE END Init */
 
