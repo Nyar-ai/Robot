@@ -30,14 +30,16 @@ virtualFolder:
                 - path: ../Core/Src/stm32f4xx_it.c
                 - path: ../Core/Src/stm32f4xx_hal_msp.c
                 - path: ../Core/Src/stm32f4xx_hal_timebase_tim.c
-                - path: ../Core/Src/scurve.c
+                - path: ../Core/Src/trape.c
                 - path: ../Core/Src/mecanum.c
                 - path: ../Core/Src/chassis.c
                 - path: ../Core/Src/stepper.c
                 - path: ../Core/Src/dma.c
                 - path: ../Core/Src/mpu6050.c
                 - path: ../Core/Src/system_stm32f4xx.c
-                - path: ../Core/Src/cross_detect.c
+                - path: ../Core/Src/camera_align.c
+                - path: ../Core/Src/clamp.c
+                - path: ../Core/Src/servo.c
               folders: []
     - name: Drivers
       files: []

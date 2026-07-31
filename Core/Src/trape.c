@@ -1,5 +1,5 @@
 /**
- * @file    scurve.c
+ * @file    trape.c
  * @brief   多实例位置型梯形(三段式)速度规划器实现
  *
  * 纯梯形加减速, 参数集对齐 project/StepMotor.c 的 3 参数模型:
@@ -19,14 +19,14 @@
  *     (等价于 project 的 "ABS_POSSHIFT < ACC_ADD_DEC_STEPS ⇒ REAL_ACC=POSSHIFT/2")
  *
  * 启动抖动抑制(min_speed, 对应 project 的 MinStartSpeed):
- *   - Scurve_MoveTo 从 min_speed 起步(而非0), 跳过电机低速死区
+ *   - Trape_MoveTo 从 min_speed 起步(而非0), 跳过电机低速死区
  */
-#include "scurve.h"
+#include "trape.h"
 #include <math.h>
 
 /* ---- 对外接口 ----------------------------------------------------------- */
 
-void Scurve_SetConfig(Scurve_Planner *p, const Scurve_Config *cfg)
+void Trape_SetConfig(Trape_Planner *p, const Trape_Config *cfg)
 {
     if (p == NULL || cfg == NULL) return;
     /* 防止除零 / 负值 */
@@ -37,25 +37,25 @@ void Scurve_SetConfig(Scurve_Planner *p, const Scurve_Config *cfg)
     if (p->cfg.min_speed >= p->cfg.max_speed) p->cfg.min_speed = p->cfg.max_speed * 0.25f;
 }
 
-void Scurve_Init(Scurve_Planner *p, const Scurve_Config *cfg)
+void Trape_Init(Trape_Planner *p, const Trape_Config *cfg)
 {
     if (p == NULL) return;
-    p->state         = SCURVE_STOP;
+    p->state         = TRAPE_STOP;
     p->current_speed = 0.0f;
     p->current_accel = 0.0f;
     p->target_pos    = 0.0f;
     p->current_pos   = 0.0f;
     p->direction     = 1.0f;
-    Scurve_SetConfig(p, cfg);
+    Trape_SetConfig(p, cfg);
 }
 
-void Scurve_MoveTo(Scurve_Planner *p, float target_pos)
+void Trape_MoveTo(Trape_Planner *p, float target_pos)
 {
     if (p == NULL) return;
     /* 目标位移过小则直接判定完成,避免数值抖动 */
     float target_abs = target_pos < 0.0f ? -target_pos : target_pos;
     if (target_abs < 1e-3f) {
-        Scurve_Stop(p);
+        Trape_Stop(p);
         return;
     }
 
@@ -71,36 +71,36 @@ void Scurve_MoveTo(Scurve_Planner *p, float target_pos)
     p->direction     = target_pos >= 0.0f ? 1.0f : -1.0f;
     /* 启动从 min_speed 起步(跳过低速死区), 进入加速段 */
     p->current_speed = v0 * p->direction;
-    p->state         = SCURVE_ACCEL;
+    p->state         = TRAPE_ACCEL;
 }
 
-void Scurve_Stop(Scurve_Planner *p)
+void Trape_Stop(Trape_Planner *p)
 {
     if (p == NULL) return;
-    p->state         = SCURVE_STOP;
+    p->state         = TRAPE_STOP;
     p->current_speed = 0.0f;
     p->current_accel = 0.0f;
     /* 不清零 current_pos,便于上层查看已完成量 */
 }
 
-bool Scurve_IsIdle(const Scurve_Planner *p)
+bool Trape_IsIdle(const Trape_Planner *p)
 {
-    return (p != NULL) && (p->state == SCURVE_STOP);
+    return (p != NULL) && (p->state == TRAPE_STOP);
 }
 
-float Scurve_GetPos(const Scurve_Planner *p)
+float Trape_GetPos(const Trape_Planner *p)
 {
     return (p != NULL) ? p->current_pos : 0.0f;
 }
 
-float Scurve_GetSpeed(const Scurve_Planner *p)
+float Trape_GetSpeed(const Trape_Planner *p)
 {
     return (p != NULL) ? p->current_speed : 0.0f;
 }
 
-float Scurve_Update(Scurve_Planner *p, float dt)
+float Trape_Update(Trape_Planner *p, float dt)
 {
-    if (p == NULL || p->state == SCURVE_STOP || dt <= 0.0f) {
+    if (p == NULL || p->state == TRAPE_STOP || dt <= 0.0f) {
         return 0.0f;
     }
 
@@ -122,22 +122,22 @@ float Scurve_Update(Scurve_Planner *p, float dt)
         /* ---- 减速段 ----
          * 任意状态(加速/匀速)一旦满足减速判据即切入减速.
          * 短距离时加速中途即触发 → 三角形曲线(无匀速段) */
-        p->state = SCURVE_DECEL;
-    } else if (p->state == SCURVE_ACCEL && speed_abs >= p->cfg.max_speed) {
+        p->state = TRAPE_DECEL;
+    } else if (p->state == TRAPE_ACCEL && speed_abs >= p->cfg.max_speed) {
         /* ---- 达到最大速度, 切匀速 ---- */
         speed_abs = p->cfg.max_speed;  /* 钳到峰值消除舍入误差 */
-        p->state  = SCURVE_CONST_SPEED;
+        p->state  = TRAPE_CONST_SPEED;
     }
 
     /* ---- 按当前状态施加加速度 ---- */
     switch (p->state) {
-    case SCURVE_ACCEL:
+    case TRAPE_ACCEL:
         p->current_accel = p->cfg.max_accel;
         break;
-    case SCURVE_CONST_SPEED:
+    case TRAPE_CONST_SPEED:
         p->current_accel = 0.0f;
         break;
-    case SCURVE_DECEL:
+    case TRAPE_DECEL:
         p->current_accel = -p->cfg.max_accel;
         break;
     default:
@@ -155,7 +155,7 @@ float Scurve_Update(Scurve_Planner *p, float dt)
         p->current_pos   = p->target_pos;
         p->current_speed = 0.0f;
         p->current_accel = 0.0f;
-        p->state         = SCURVE_STOP;
+        p->state         = TRAPE_STOP;
         return 0.0f;
     }
     /* 速度上限(max_speed) */
@@ -171,7 +171,7 @@ float Scurve_Update(Scurve_Planner *p, float dt)
         p->current_pos   = p->target_pos;
         p->current_speed = 0.0f;
         p->current_accel = 0.0f;
-        p->state         = SCURVE_STOP;
+        p->state         = TRAPE_STOP;
     }
 
     return p->current_speed;

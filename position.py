@@ -1,63 +1,41 @@
 # cross_detect_uart.py
-# K230 立创庐山派 / Lite K230D
-# 纯二值化 + 投影法 识别黑色十字中心
-# 算法: 全局二值化 → 水平/垂直投影 → 峰值定位 → 十字交叉点
-#
-# 协议模式: 请求-响应
-#   收到 "DETECT\r\n" → 连拍 N 帧 → 中值滤波 → 回复 "CROSS,dx,dy,conf\r\n" 或 "NOCROSS\r\n"
-
+# K230 projection cross detect (Otsu + vote)
 import time, os, sys
 from media.sensor import *
 from media.display import *
 from media.media import *
 import image
-from machine import UART
+from machine import UART, FPIOA
 
-# ==================== 配置参数 ====================
-
-CAM_WIDTH   = 800
-CAM_HEIGHT  = 480
-
-# 画面中心 (偏移原点)
-CENTER_X = CAM_WIDTH  // 2   # 400
-CENTER_Y = CAM_HEIGHT // 2   # 240
-
-# 二值化灰度阈值: 灰度 < BLACK_THRESH 判定为黑色
-BLACK_THRESH = 80
-
-# 投影采样步进 (步进越大越快, 精度越低, 推荐4)
+CAM_WIDTH = 800
+CAM_HEIGHT = 480
+CAM_IMG_CX = CAM_WIDTH // 2
+CAM_IMG_CY = CAM_HEIGHT // 2
+USE_OTSU = False
+BLACK_THRESH = 127
 SAMPLE_STEP = 8
-
-# 峰值判定: 行/列黑色像素数需 >= 总行/列数的 MIN_PEAK_RATIO 才算有效
 MIN_PEAK_RATIO = 0.08
+VOTE_WINDOW = 5
+FRAME_SOF0 = 0xAA
+FRAME_SOF1 = 0x55
+REQ_LEN = 3
+ACK_LEN = 8
+ACK_STATUS_OK = 1
+ACK_STATUS_NONE = 0
 
-# 反光间隙填充: 投影数组中允许的最大白点间隙 (采样点数, 0=不填充)
-# 黑线上反光白点通常宽度很小, 采样步进 SAMPLE_STEP=8 时最多打断 1~2 个采样点
-PROJ_GAP_FILL = 2
+# ROI (Region of Interest) - 排除车体自身区域
+# 摄像头装在车尾, 车体出现在画面下部, 裁剪掉底部若干行
+ROI_ENABLE = True           # 是否启用 ROI
+ROI_Y_START = 0             # ROI 起始 Y(含), 保持 0(顶部不变)
+ROI_Y_END   = 360           # ROI 结束 Y(不含), 即排除 Y>=360 的车体区域(可实测调)
 
-# 检测帧数 (收到 DETECT 后连续拍多少帧做统计)
-DETECT_FRAMES = 10
-
-# 串口
-UART_ID     = 2
-UART_BAUD   = 115200
-
-# 串口接收超时 (ms)
-UART_RX_TIMEOUT = 50
-
-# 请求帧 / 响应帧 分隔符
-FRAME_TERM = "\r\n"
-
-
-# ==================== 全局变量 ====================
 frame_count = 0
 fps_start = 0
 fps_value = 0
+vote_history = []
 
 
 def init_sensor():
-    """初始化摄像头"""
-    print("[SENSOR] 初始化摄像头 800x480 RGB565...")
     sensor = Sensor()
     sensor.reset()
     sensor.set_framesize(width=CAM_WIDTH, height=CAM_HEIGHT)
@@ -66,42 +44,21 @@ def init_sensor():
 
 
 def init_display():
-    """初始化LCD显示 + IDE帧缓冲"""
-    print("[DISPLAY] 初始化 ST7701 LCD + IDE...")
     Display.init(Display.ST7701, width=CAM_WIDTH, height=CAM_HEIGHT, to_ide=True)
 
 
 def init_uart():
-    """初始化UART"""
-    print("[UART] 初始化 UART%d @ %d baud..." % (UART_ID, UART_BAUD))
-    try:
-        uart = UART(UART_ID, UART_BAUD, timeout=UART_RX_TIMEOUT)
-        print("[UART] 就绪")
-        return uart
-    except Exception as e:
-        print("[UART] 初始化失败: %s, 将以模拟模式运行" % str(e))
-        return None
-
-
-def uart_readline(uart):
-    """非阻塞读一行: 读到 \\r\\n 返回字符串(不含后缀), 否则返回 None"""
-    if uart is None:
-        return None
-    try:
-        if uart.any() == 0:
-            return None
-        # readline 已包含 \\r\\n
-        line = uart.readline()
-        if line is None:
-            return None
-        s = line.decode("utf-8").strip()
-        return s
-    except:
-        return None
+    # 配置 UART2 引脚: 丝印T=GPIO11(TX), 丝印R=GPIO12(RX)
+    fpioa = FPIOA()
+    fpioa.set_function(11, FPIOA.UART2_TXD)
+    fpioa.set_function(12, FPIOA.UART2_RXD)
+    uart = UART(UART.UART2, baudrate=115200,
+                bits=UART.EIGHTBITS, parity=UART.PARITY_NONE, stop=UART.STOPBITS_ONE)
+    print("[UART] UART2 init ok: GPIO11(TX), GPIO12(RX), 115200 8N1")
+    return uart
 
 
 def update_fps():
-    """更新FPS计数"""
     global frame_count, fps_start, fps_value
     frame_count += 1
     now = time.ticks_ms()
@@ -113,337 +70,296 @@ def update_fps():
     return fps_value
 
 
-def fill_projection_gaps(proj, max_gap, threshold_ratio=0.3):
-    """
-    反光间隙填充: 弥补黑线上白色反光点造成的投影断裂
-
-    策略:
-      遍历投影数组, 找到连续的高值区域 (黑色像素密集区)
-      如果两个高值区域之间的低值间隙 <= max_gap,
-      则将间隙填充为两侧区域的最小值, 使断裂连接起来
-
-    参数:
-        proj            - 投影数组
-        max_gap         - 允许的最大间隙 (采样点数)
-        threshold_ratio - 判定"高值"的阈值比例 (相对于 max(proj))
-    """
-    if max_gap <= 0 or len(proj) == 0:
-        return proj
-
-    n = len(proj)
-    max_val = max(proj)
-    if max_val <= 0:
-        return proj
-
-    # 判定为黑色区域的阈值
-    thresh = max_val * threshold_ratio
-
-    # 标记每个位置是否为"有效区域" (包含大量黑色像素)
-    valid = [proj[i] >= thresh for i in range(n)]
-
-    # 查找连续有效区域段, 并填充短间隙
-    result = list(proj)  # 复制一份
-
-    i = 0
-    while i < n:
-        if valid[i]:
-            # 找到当前有效区域的结束位置
-            region_start = i
-            while i < n and valid[i]:
-                i += 1
-            region_end = i  # region_end 是有效区域之后第一个无效位置
-
-            # 检查后续是否有短间隙 + 下一个有效区域
-            if i < n - 1:
-                gap_start = i
-                while i < n and not valid[i]:
-                    i += 1
-                gap_end = i  # gap_end 是下一个有效区域的起始位置
-                gap_len = gap_end - gap_start
-
-                if gap_end < n and gap_len <= max_gap:
-                    # 短间隙: 用两侧有效区域的最小值填充
-                    left_val = result[region_end - 1]
-                    right_val = result[gap_end]
-                    fill_val = left_val if left_val < right_val else right_val
-
-                    for g in range(gap_start, gap_end):
-                        result[g] = fill_val
-        else:
-            i += 1
-
-    return result
+def compute_otsu_threshold(gs_img):
+    try:
+        bins = [0] * 256
+        step = 4
+        for y in range(0, CAM_HEIGHT, step):
+            for x in range(0, CAM_WIDTH, step):
+                g = gs_img.get_pixel(x, y)
+                if g is not None:
+                    bins[g] += 1
+        total = sum(bins)
+        if total == 0:
+            return BLACK_THRESH
+        sum_all = sum(i * bins[i] for i in range(256))
+        sum_b = 0
+        w_b = 0
+        max_var = -1.0
+        best_t = BLACK_THRESH
+        for t in range(256):
+            w_b += bins[t]
+            if w_b == 0:
+                continue
+            w_f = total - w_b
+            if w_f == 0:
+                break
+            sum_b += t * bins[t]
+            mb = sum_b / w_b
+            mf = (sum_all - sum_b) / w_f
+            var = w_b * w_f * (mb - mf) * (mb - mf)
+            if var > max_var:
+                max_var = var
+                best_t = t
+        return best_t
+    except:
+        return BLACK_THRESH
 
 
-def binarize_and_project(img):
-    """
-    bytearray高速二值化 + 投影
+def binarize_and_project(gs_img):
+    try:
+        data = gs_img.bytearray()
+    except:
+        data = None
 
-    使用 img.bytearray() 一次性获取全帧灰度数据 (img 需先 to_grayscale)
-    避免逐像素 get_pixel() 的 Python→C 调用开销
-    """
-    gs = img.to_grayscale(copy=True)
-    data = gs.bytearray()
-    total = len(data)     # 800 * 480 = 384000
+    # ROI 范围确定
+    if ROI_ENABLE:
+        y_start = ROI_Y_START
+        y_end   = ROI_Y_END
+    else:
+        y_start = 0
+        y_end   = CAM_HEIGHT
 
-    # 投影采样
-    h_samples = CAM_HEIGHT // SAMPLE_STEP + 1
+    roi_height = y_end - y_start
+    h_samples = roi_height // SAMPLE_STEP + 1
     v_samples = CAM_WIDTH // SAMPLE_STEP + 1
     h_proj = [0] * h_samples
     v_proj = [0] * v_samples
-
-    stride = CAM_WIDTH  # 每行像素数
-
-    for sy in range(0, CAM_HEIGHT, SAMPLE_STEP):
-        row_base = sy * stride
-        h_idx = sy // SAMPLE_STEP
-        for sx in range(0, CAM_WIDTH, SAMPLE_STEP):
-            idx = row_base + sx
-            if idx < total:
-                g = data[idx]
-                if g < BLACK_THRESH:
+    stride = CAM_WIDTH
+    if data is not None:
+        total = len(data)
+        for sy in range(y_start, y_end, SAMPLE_STEP):
+            row_base = sy * stride
+            h_idx = (sy - y_start) // SAMPLE_STEP
+            for sx in range(0, CAM_WIDTH, SAMPLE_STEP):
+                idx = row_base + sx
+                if idx < total:
+                    if data[idx] != 0:
+                        h_proj[h_idx] += 1
+                        v_proj[sx // SAMPLE_STEP] += 1
+    else:
+        for sy in range(y_start, y_end, SAMPLE_STEP):
+            h_idx = (sy - y_start) // SAMPLE_STEP
+            for sx in range(0, CAM_WIDTH, SAMPLE_STEP):
+                g = gs_img.get_pixel(sx, sy)
+                if g is not None and g != 0:
                     h_proj[h_idx] += 1
                     v_proj[sx // SAMPLE_STEP] += 1
-
-    # 反光间隙填充: 消除黑线上白色反光点造成的投影断裂
-    h_proj = fill_projection_gaps(h_proj, PROJ_GAP_FILL)
-    v_proj = fill_projection_gaps(v_proj, PROJ_GAP_FILL)
-
     return h_proj, v_proj
 
 
-def find_peak_center(h_proj, v_proj):
-    """
-    找横黑线和竖黑线中心线的交点
-
-    横线中心: h_proj 中黑色像素最多的行 → cy (水平投影峰值行)
-    竖线中心: v_proj 中黑色像素最多的列 → cx (垂直投影峰值列)
-    交点 = (cx, cy)
-
-    返回: (cx, cy) 或 (-1, -1)
-    """
+def find_peak_center(h_proj, v_proj, roi_y_start=0):
     h_len = len(h_proj)
     v_len = len(v_proj)
-
-    # 每行最多可有的黑色采样点数 (用于阈值判定)
     h_max_possible = v_len
-    v_max_possible = h_len
-
-    # --- 横线中心 cy: h_proj 最大值所在行 ---
     h_max_val = max(h_proj) if h_proj else 0
     if h_max_val < h_max_possible * MIN_PEAK_RATIO:
         return -1, -1
-
-    # 找峰值行索引 (多个相同最大值取中间)
-    h_peak_indices = [i for i, v in enumerate(h_proj) if v == h_max_val]
-    h_idx = h_peak_indices[len(h_peak_indices) // 2]
-    cy = h_idx * SAMPLE_STEP + SAMPLE_STEP // 2
-    if cy >= CAM_HEIGHT:
-        cy = CAM_HEIGHT - 1
-
-    # --- 竖线中心 cx: v_proj 最大值所在列 ---
-    v_max_val = max(v_proj) if v_proj else 0
-    if v_max_val < v_max_possible * MIN_PEAK_RATIO:
+    h_threshold = h_max_val * 0.5
+    best_h_start = 0
+    best_h_end = 0
+    best_h_width = 0
+    in_region = False
+    region_start = 0
+    for i in range(h_len):
+        if h_proj[i] >= h_threshold:
+            if not in_region:
+                in_region = True
+                region_start = i
+        else:
+            if in_region:
+                in_region = False
+                width = i - region_start
+                if width > best_h_width:
+                    best_h_width = width
+                    best_h_start = region_start
+                    best_h_end = i
+    if in_region:
+        width = h_len - region_start
+        if width > best_h_width:
+            best_h_width = width
+            best_h_start = region_start
+            best_h_end = h_len
+    if best_h_width < 2:
         return -1, -1
-
-    v_peak_indices = [i for i, v in enumerate(v_proj) if v == v_max_val]
-    v_idx = v_peak_indices[len(v_peak_indices) // 2]
-    cx = v_idx * SAMPLE_STEP + SAMPLE_STEP // 2
+    h_center_sample = (best_h_start + best_h_end) // 2
+    cy = h_center_sample * SAMPLE_STEP + SAMPLE_STEP // 2 + roi_y_start
+    v_max_val = max(v_proj) if v_proj else 0
+    if v_max_val < h_max_possible * MIN_PEAK_RATIO:
+        return -1, -1
+    v_threshold = v_max_val * 0.5
+    best_v_start = 0
+    best_v_end = 0
+    best_v_width = 0
+    in_region = False
+    region_start = 0
+    for i in range(v_len):
+        if v_proj[i] >= v_threshold:
+            if not in_region:
+                in_region = True
+                region_start = i
+        else:
+            if in_region:
+                in_region = False
+                width = i - region_start
+                if width > best_v_width:
+                    best_v_width = width
+                    best_v_start = region_start
+                    best_v_end = i
+    if in_region:
+        width = v_len - region_start
+        if width > best_v_width:
+            best_v_width = width
+            best_v_start = region_start
+            best_v_end = v_len
+    if best_v_width < 2:
+        return -1, -1
+    v_center_sample = (best_v_start + best_v_end) // 2
+    cx = v_center_sample * SAMPLE_STEP + SAMPLE_STEP // 2
     if cx >= CAM_WIDTH:
         cx = CAM_WIDTH - 1
-
     return cx, cy
 
 
-def median_filter(values):
-    """中值滤波: 对列表排序后取中间值, 空列表返回 None"""
-    if not values:
+def detect_cross(img):
+    gs = img.to_grayscale(copy=True)
+    if USE_OTSU:
+        thresh = compute_otsu_threshold(gs)
+    else:
+        thresh = BLACK_THRESH
+    try:
+        gs.binary([(0, thresh)])
+    except Exception as e:
+        print("[binary] failed: " + str(e) + " thresh=" + str(thresh))
         return None
-    s = sorted(values)
-    return s[len(s) // 2]
+    h_proj, v_proj = binarize_and_project(gs)
+    roi_ys = ROI_Y_START if ROI_ENABLE else 0
+    cx, cy = find_peak_center(h_proj, v_proj, roi_ys)
+    if cx < 0 or cy < 0:
+        return None
+    return (cx, cy)
 
 
-def do_detect_and_reply(img_buf, uart):
-    """
-    核心检测函数:
-    1. snapshot 连拍 DETECT_FRAMES 帧
-    2. 每帧检测十字, 计算相对画面中心的偏移 (dx, dy)
-    3. 对 dx, dy 分别做中值滤波
-    4. 统计检测成功帧数 → confidence
-    5. 通过 UART 回复结果
-    """
-    print("[DETECT] 开始连拍 %d 帧..." % DETECT_FRAMES)
+def push_and_vote(cx, cy):
+    global vote_history
+    if cx is None:
+        vote_history = []
+        return None, None
+    vote_history.append((cx, cy))
+    if len(vote_history) > VOTE_WINDOW:
+        vote_history.pop(0)
+    if len(vote_history) == 0:
+        return None, None
+    xs = sorted(p[0] for p in vote_history)
+    ys = sorted(p[1] for p in vote_history)
+    mid = len(xs) // 2
+    return xs[mid], ys[mid]
 
-    dx_list = []
-    dy_list = []
-    hit_count = 0
 
-    for i in range(DETECT_FRAMES):
-        # 获取一帧
-        img = sensor.snapshot()
+def build_ack(status, dx, dy):
+    dx_u16 = dx & 0xFFFF
+    dy_u16 = dy & 0xFFFF
+    frame = bytes([FRAME_SOF0, FRAME_SOF1, status,
+                   dx_u16 & 0xFF, (dx_u16 >> 8) & 0xFF,
+                   dy_u16 & 0xFF, (dy_u16 >> 8) & 0xFF])
+    xor = 0
+    for b in frame:
+        xor ^= b
+    return frame + bytes([xor])
 
-        # 二值化 + 投影
-        h_proj, v_proj = binarize_and_project(img)
 
-        # 检测十字
-        cx, cy = find_peak_center(h_proj, v_proj)
+def try_read_request(uart):
+    # 非阻塞读取所有可用数据，查找帧头 AA 55
+    data = uart.read()
+    if not data or len(data) < REQ_LEN:
+        return None
+    for i in range(len(data) - REQ_LEN + 1):
+        if data[i] == FRAME_SOF0 and data[i + 1] == FRAME_SOF1:
+            return data[i + 2]
+    return None
 
-        if cx >= 0 and cy >= 0:
-            # 计算相对画面中心的偏移
-            dx = cx - CENTER_X   # >0 十字在中心右侧
-            dy = cy - CENTER_Y   # >0 十字在中心下方(车头方向)
-            dx_list.append(dx)
-            dy_list.append(dy)
-            hit_count += 1
 
-        # 显示 (最后一帧用于预览)
-        if i == DETECT_FRAMES - 1:
-            update_fps()
-            if cx >= 0:
-                draw_overlay(img, cx, cy, fps_value, dx, dy)
-            else:
-                draw_overlay(img, -1, -1, fps_value, 0, 0)
-            Display.show_image(img)
-
-    # 统计结果
-    total = DETECT_FRAMES
-    success_rate = hit_count * 100 // total
-
-    if hit_count < total // 2:
-        # 大部分帧未检测到十字 → 回复 NOCROSS
-        msg = "NOCROSS" + FRAME_TERM
-        print("[DETECT] 结果: NOCROSS (hit=%d/%d)" % (hit_count, total))
+def draw_overlay(img, cx, cy, fps, last_status, last_dx, last_dy):
+    img.draw_string_advanced(0, 0, 16, "FPS:" + str(fps) + " (proj)", color=(255, 255, 255))
+    img.draw_string_advanced(0, 20, 14,
+        "last: stat=" + str(last_status) + " dxdy=(" + str(last_dx) + "," + str(last_dy) + ")",
+        color=(200, 200, 0))
+    if cx is not None and cx >= 0:
+        img.draw_cross(int(cx), int(cy), color=(0, 255, 0), size=24, thickness=2)
+        img.draw_rectangle(int(cx) - 30, int(cy) - 30, 60, 60, color=(255, 0, 0), thickness=2)
+        img.draw_string_advanced(int(cx) + 32, int(cy) - 10, 16,
+            "(" + str(int(cx)) + "," + str(int(cy)) + ")", color=(0, 255, 0))
     else:
-        dx_med = median_filter(dx_list)
-        dy_med = median_filter(dy_list)
-        msg = "CROSS,%d,%d,%d" % (dx_med, dy_med, success_rate) + FRAME_TERM
-        print("[DETECT] 结果: dx=%d dy=%d conf=%d%% (hit=%d/%d)" %
-              (dx_med, dy_med, success_rate, hit_count, total))
+        img.draw_string_advanced(10, 30, 24, "NO CROSS", color=(255, 0, 0))
 
-    # 发送响应
-    if uart is not None:
-        try:
-            uart.write(msg)
-        except:
-            pass
-    print("[TX] " + msg.strip())
-
-
-def draw_preview(img, fps):
-    """轻量预览: 只画十字准星和状态栏, 不做投影检测 (省 CPU)"""
-    # 左上角: FPS
-    img.draw_string_advanced(0, 0, 16, "FPS:%d" % fps,
-                              color=(255, 255, 255))
-    # 画面中心十字 (蓝色参考线)
-    img.draw_cross(CENTER_X, CENTER_Y, color=(0, 0, 255), size=16, thickness=1)
-    # 底部状态栏
-    img.draw_string_advanced(10, CAM_HEIGHT - 22, 14,
-                              "WAIT DETECT...", color=(200, 200, 200))
-
-
-def draw_overlay(img, cx, cy, fps, dx, dy):
-    """在图像上绘制检测结果"""
-
-    # 左上角: FPS
-    img.draw_string_advanced(0, 0, 16, "FPS:%d" % fps,
-                              color=(255, 255, 255))
-
-    # 画面中心十字 (蓝色参考线)
-    img.draw_cross(CENTER_X, CENTER_Y, color=(0, 0, 255), size=16, thickness=1)
-
-    if cx >= 0:
-        # 绿色大十字标记检测到的中心
-        img.draw_cross(cx, cy, color=(0, 255, 0), size=24, thickness=2)
-        # 红色瞄准框
-        img.draw_rectangle(cx - 30, cy - 30, 60, 60,
-                           color=(255, 0, 0), thickness=2)
-        # 偏移量文本
-        img.draw_string_advanced(cx + 32, cy - 24, 14,
-                                  "off(%d,%d)" % (dx, dy),
-                                  color=(0, 255, 0))
-        # 坐标文本
-        img.draw_string_advanced(cx + 32, cy - 2, 14,
-                                  "(%d,%d)" % (cx, cy),
-                                  color=(0, 255, 0))
-    else:
-        img.draw_string_advanced(10, 30, 24, "NO CROSS",
-                                  color=(255, 0, 0))
-
-    # 底部状态栏
-    img.draw_string_advanced(10, CAM_HEIGHT - 22, 14,
-                              "WAIT DETECT..." , color=(200, 200, 200))
-
-
-# ==================== 主程序 ====================
 
 def main():
-    global frame_count, fps_start
-
     print("=" * 50)
-    print("  K230 二值化 + 投影法 黑色十字识别")
-    print("  请求-响应模式: 收 DETECT → 检测 → 回复 CROSS/NOCROSS")
-    print("  立创庐山派 / Lite K230D")
+    print("  K230 projection cross detect (Otsu + vote)")
     print("=" * 50)
-
     os.exitpoint(os.EXITPOINT_ENABLE)
     MediaManager.init()
-
-    global sensor
     sensor = init_sensor()
     init_display()
     uart = init_uart()
-
     sensor.run()
+    global fps_start
     fps_start = time.ticks_ms()
-
-    print("[MAIN] 开始主循环, 等待 DETECT 请求...")
-    print("[MAIN] 参数: 阈值<%d, 步进=%d, 检测帧数=%d" %
-          (BLACK_THRESH, SAMPLE_STEP, DETECT_FRAMES))
-    print("[MAIN] 画面中心: (%d, %d), 偏移=检测点-中心" % (CENTER_X, CENTER_Y))
-
+    last_status = ACK_STATUS_NONE
+    last_dx = 0
+    last_dy = 0
     try:
         while True:
             os.exitpoint()
-
-            # 1. 获取一帧用于预览
             img = sensor.snapshot()
-
-            # 2. FPS
+            cross = detect_cross(img)
+            if cross is not None:
+                cx_vote, cy_vote = push_and_vote(cross[0], cross[1])
+            else:
+                cx_vote, cy_vote = push_and_vote(None, None)
             fps = update_fps()
-
-            # 3. 轻量预览: 只画十字准星, 不做投影检测 (省 CPU)
-            draw_preview(img, fps)
-
-            # 4. 显示
+            if cx_vote is not None:
+                dx = int(cx_vote - CAM_IMG_CX)
+                dy = int(cy_vote - CAM_IMG_CY)
+            else:
+                dx = 0
+                dy = 0
+            draw_overlay(img, cx_vote, cy_vote, fps, last_status, last_dx, last_dy)
             Display.show_image(img)
-
-            # 5. 检查 UART 是否有 "DETECT" 请求
-            line = uart_readline(uart)
-            if line is not None:
-                print("[RX] '%s'" % line)
-                if line == "DETECT":
-                    # 收到请求, 执行完整检测并回复
-                    do_detect_and_reply(img, uart)
-                elif line == "OK":
-                    print("[MAIN] STM32 确认纠偏完成")
-                elif line == "RETRY":
-                    print("[MAIN] STM32 要求重试")
+            if frame_count % 30 == 0:
+                if cx_vote is not None:
+                    print("[DBG] CROSS=(" + str(int(cx_vote)) + "," + str(int(cy_vote)) + ") vote=" + str(len(vote_history)) + " FPS=" + str(fps))
                 else:
-                    print("[MAIN] 未知指令: '%s'" % line)
-
+                    print("[DBG] NO CROSS FPS=" + str(fps))
+            req_id = try_read_request(uart)
+            if req_id is not None:
+                if cx_vote is not None:
+                    status = ACK_STATUS_OK
+                    dx = int(cx_vote - CAM_IMG_CX)
+                    dy = int(cy_vote - CAM_IMG_CY)
+                else:
+                    status = ACK_STATUS_NONE
+                    dx = 0
+                    dy = 0
+                ack = build_ack(status, dx, dy)
+                uart.write(ack)
+                last_status = status
+                last_dx = dx
+                last_dy = dy
+                print("[TX] id=" + str(req_id) + " stat=" + str(status) + " dxdy=(" + str(dx) + "," + str(dy) + ")")
     except KeyboardInterrupt:
-        print("\n[MAIN] 用户中断")
+        print("\n[MAIN] user break")
     except BaseException as e:
         import sys
         sys.print_exception(e)
     finally:
-        print("[CLEANUP] 释放资源...")
         sensor.stop()
         Display.deinit()
+        uart.deinit()
+        print("[INFO] UART 资源已释放")
         os.exitpoint(os.EXITPOINT_ENABLE_SLEEP)
         time.sleep_ms(100)
         MediaManager.deinit()
-        print("[CLEANUP] 完成")
 
 
 if __name__ == "__main__":
