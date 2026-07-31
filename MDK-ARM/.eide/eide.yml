@@ -40,6 +40,8 @@ virtualFolder:
                 - path: ../Core/Src/camera_align.c
                 - path: ../Core/Src/clamp.c
                 - path: ../Core/Src/servo.c
+                - path: ../Core/Src/camera_color.c
+                - path: ../Core/Src/cross_detect.c
               folders: []
     - name: Drivers
       files: []

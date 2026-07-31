@@ -3,11 +3,11 @@
 <title>Static Call Graph - [Robot\Robot.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Robot\Robot.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Thu Jul 30 22:44:42 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Fri Jul 31 16:07:14 2026
 <BR><P>
-<H3>Maximum Stack Usage =        464 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
+<H3>Maximum Stack Usage =        324 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
-StartDefaultTask &rArr; CrossDetect_Calibrate &rArr; parse_line &rArr; __0sscanf &rArr; __vfscanf_char &rArr; __vfscanf &rArr; _scanf_int
+_printf_f &rArr; _printf_fp_dec &rArr; _printf_fp_dec_real &rArr; _fp_digits &rArr; _btod_etento &rArr; _btod_emul &rArr; _e2e
 <P>
 <H3>
 Functions with no stack information
@@ -107,7 +107,7 @@ Function Pointers
  <LI><a href="#[6b]">StartDefaultTask</a> from freertos.o(i.StartDefaultTask) referenced from freertos.o(i.MX_FREERTOS_Init)
  <LI><a href="#[6d]">StartGyroTask</a> from freertos.o(i.StartGyroTask) referenced from freertos.o(i.MX_FREERTOS_Init)
  <LI><a href="#[d]">SysTick_Handler</a> from cmsis_os2.o(i.SysTick_Handler) referenced from startup_stm32f407xx.o(RESET)
- <LI><a href="#[5f]">SystemInit</a> from system_stm32f4xx_1.o(i.SystemInit) referenced from startup_stm32f407xx.o(.text)
+ <LI><a href="#[5f]">SystemInit</a> from system_stm32f4xx.o(i.SystemInit) referenced from startup_stm32f407xx.o(.text)
  <LI><a href="#[10]">TAMP_STAMP_IRQHandler</a> from startup_stm32f407xx.o(.text) referenced from startup_stm32f407xx.o(RESET)
  <LI><a href="#[26]">TIM1_BRK_TIM9_IRQHandler</a> from startup_stm32f407xx.o(.text) referenced from startup_stm32f407xx.o(RESET)
  <LI><a href="#[29]">TIM1_CC_IRQHandler</a> from startup_stm32f407xx.o(.text) referenced from startup_stm32f407xx.o(RESET)
@@ -346,7 +346,7 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 8 + Unknown Stack Size
 <LI>Call Chain = __rt_lib_init_lc_ctype_2 &rArr; _get_lc_ctype
 </UL>
-<BR>[Calls]<UL><LI><a href="#[67]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_get_lc_ctype
+<BR>[Calls]<UL><LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_get_lc_ctype
 </UL>
 
 <P><STRONG><a name="[1f9]"></a>__rt_lib_init_lc_ctype_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libinit2.o(.ARM.Collect$$libinit$$00000013))
@@ -1211,53 +1211,6 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(RESET)
 </UL>
-<P><STRONG><a name="[f0]"></a>CrossDetect_AddPoint</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, cross_detect.o(i.CrossDetect_AddPoint))
-<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = CrossDetect_AddPoint
-</UL>
-<BR>[Called By]<UL><LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CrossDetect_Init
-</UL>
-
-<P><STRONG><a name="[e2]"></a>CrossDetect_Calibrate</STRONG> (Thumb, 344 bytes, Stack size 72 bytes, cross_detect.o(i.CrossDetect_Calibrate))
-<BR><BR>[Stack]<UL><LI>Max Depth = 376<LI>Call Chain = CrossDetect_Calibrate &rArr; parse_line &rArr; __0sscanf &rArr; __vfscanf_char &rArr; __vfscanf &rArr; _scanf_int
-</UL>
-<BR>[Calls]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_set_pose
-<LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_is_idle
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;chassis_get_pose
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Receive_DMA
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_DMAStop
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;uart_tx
-<LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;parse_line
-<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueSemaphoreTake
-<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sinf
-<LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_cosf
-<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-</UL>
-<BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartDefaultTask
-</UL>
-
-<P><STRONG><a name="[ef]"></a>CrossDetect_Init</STRONG> (Thumb, 88 bytes, Stack size 8 bytes, cross_detect.o(i.CrossDetect_Init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = CrossDetect_Init &rArr; CrossDetect_AddPoint
-</UL>
-<BR>[Calls]<UL><LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CrossDetect_AddPoint
-<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-</UL>
-<BR>[Called By]<UL><LI><a href="#[166]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_FREERTOS_Init
-</UL>
-
-<P><STRONG><a name="[16a]"></a>CrossDetect_SetSemaphore</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, cross_detect.o(i.CrossDetect_SetSemaphore))
-<BR><BR>[Called By]<UL><LI><a href="#[166]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_FREERTOS_Init
-</UL>
-
-<P><STRONG><a name="[f1]"></a>CrossDetect_UART_IDLE_IRQHandler</STRONG> (Thumb, 90 bytes, Stack size 16 bytes, cross_detect.o(i.CrossDetect_UART_IDLE_IRQHandler))
-<BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = CrossDetect_UART_IDLE_IRQHandler &rArr; HAL_UART_DMAStop &rArr; HAL_DMA_Abort
-</UL>
-<BR>[Calls]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_DMAStop
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGiveFromISR
-</UL>
-<BR>[Called By]<UL><LI><a href="#[34]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART2_IRQHandler
-</UL>
-
 <P><STRONG><a name="[19]"></a>DMA1_Stream0_IRQHandler</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, stm32f4xx_it.o(i.DMA1_Stream0_IRQHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = DMA1_Stream0_IRQHandler &rArr; HAL_DMA_IRQHandler
 </UL>
@@ -2326,7 +2279,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[5f]"></a>SystemInit</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, system_stm32f4xx_1.o(i.SystemInit))
+<P><STRONG><a name="[5f]"></a>SystemInit</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, system_stm32f4xx.o(i.SystemInit))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(.text)
 </UL>
 <P><STRONG><a name="[3b]"></a>TIM8_TRG_COM_TIM14_IRQHandler</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, stm32f4xx_it.o(i.TIM8_TRG_COM_TIM14_IRQHandler))
@@ -3269,7 +3222,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_lib_init_lc_numeric_2
 </UL>
 
-<P><STRONG><a name="[67]"></a>_get_lc_ctype</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, lc_ctype_c.o(locale$$code))
+<P><STRONG><a name="[63]"></a>_get_lc_ctype</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, lc_ctype_c.o(locale$$code))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = _get_lc_ctype
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcmp
@@ -3485,7 +3438,7 @@ Local Symbols
 <BR>[Address Reference Count : 2]<UL><LI> stm32f4xx_hal_i2c.o(i.I2C_ITError)
 <LI> stm32f4xx_hal_i2c.o(i.I2C_Slave_STOPF)
 </UL>
-<P><STRONG><a name="[69]"></a>I2C_DMAError</STRONG> (Thumb, 64 bytes, Stack size 16 bytes, stm32f4xx_hal_i2c.o(i.I2C_DMAError))
+<P><STRONG><a name="[65]"></a>I2C_DMAError</STRONG> (Thumb, 64 bytes, Stack size 16 bytes, stm32f4xx_hal_i2c.o(i.I2C_DMAError))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = I2C_DMAError
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_GetError
@@ -3493,7 +3446,7 @@ Local Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> stm32f4xx_hal_i2c.o(i.HAL_I2C_Mem_Read_DMA)
 </UL>
-<P><STRONG><a name="[68]"></a>I2C_DMAXferCplt</STRONG> (Thumb, 274 bytes, Stack size 24 bytes, stm32f4xx_hal_i2c.o(i.I2C_DMAXferCplt))
+<P><STRONG><a name="[64]"></a>I2C_DMAXferCplt</STRONG> (Thumb, 274 bytes, Stack size 24 bytes, stm32f4xx_hal_i2c.o(i.I2C_DMAXferCplt))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = I2C_DMAXferCplt &rArr; HAL_I2C_MemRxCpltCallback &rArr; xQueueGiveFromISR &rArr; xTaskRemoveFromEventList
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_MemRxCpltCallback
@@ -3975,7 +3928,7 @@ Local Symbols
 <P><STRONG><a name="[71]"></a>prvTaskExitError</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, port.o(i.prvTaskExitError))
 <BR>[Address Reference Count : 1]<UL><LI> port.o(i.pxPortInitialiseStack)
 </UL>
-<P><STRONG><a name="[64]"></a>_printf_input_char</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, _printf_char_common.o(.text))
+<P><STRONG><a name="[62]"></a>_printf_input_char</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, _printf_char_common.o(.text))
 <BR>[Address Reference Count : 1]<UL><LI> _printf_char_common.o(.text)
 </UL>
 <P><STRONG><a name="[c7]"></a>_fp_digits</STRONG> (Thumb, 432 bytes, Stack size 96 bytes, _printf_fp_dec.o(.text))
