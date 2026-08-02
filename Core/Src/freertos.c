@@ -182,8 +182,30 @@ void StartDefaultTask(void *argument)
   osDelay(1000);
   clamp_gripper_open();
   osDelay(1000);
-  clamp_gripper_close();
+  
   chassis_uart_log("[servo] === Servo Test Done ===\r\n\r\n");
+
+  /* ===== 摄像头颜色识别测试（循环） ===== */
+  chassis_uart_log("[color] loop test start - send response frame via USART3...\r\n");
+  for (;;) {
+      uint8_t color;
+      uint16_t mx, my;
+      bool ok = camera_color_detect(&color, &mx, &my, 500);
+      if (ok) {
+          const char *color_name = "???";
+          switch (color) {
+              case CAM_COLOR_RED:    color_name = "RED";    break;
+              case CAM_COLOR_GREEN:  color_name = "GREEN";  break;
+              case CAM_COLOR_BLUE:   color_name = "BLUE";   break;
+              case CAM_COLOR_WHITE:  color_name = "WHITE";  break;
+              case CAM_COLOR_BLACK:  color_name = "BLACK";  break;
+          }
+          chassis_uart_log("[color] detect=%s center=(%d,%d)\r\n", color_name, mx, my);
+      } else {
+          chassis_uart_log("[color] no detect (timeout or NONE)\r\n");
+      }
+      osDelay(500);
+  }
 
   /* ===== 正常任务 ===== */
   chassis_uart_log("\r\n[task] auto-cycle start: forward 500mm -> return -> calibrate -> loop\r\n");
@@ -228,7 +250,7 @@ void StartDefaultTask(void *argument)
       if (clamp_set_height(0.0f))
       {
         chassis_uart_log("[clamp] down done\r\n");
-        state = STATE_MOVE1;
+        state = DS_DONE;
       }
       break;
     }

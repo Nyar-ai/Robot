@@ -8,12 +8,12 @@
  *
  * 工作原理:
  *   - TIM2 配置为 50Hz (20ms 周期), 1MHz 计数频率
- *   - 脉宽 500~2500μs → 夹爪0°~180° / 旋转0°~270°
+ *   - 脉宽 500~2500μs → 夹爪0°~270° / 旋转0°~270°
  *   - 一次调用即时生效, 无需 tick 推进
  *
  * 与 clamp 层对接:
- *   clamp_gripper_open()  → Servo_SetAngle(SERVO_GRIPPER, 180)
- *   clamp_gripper_close() → Servo_SetAngle(SERVO_GRIPPER, 0)
+ *   clamp_gripper_open()  → Servo_SetAngle(SERVO_GRIPPER, CLAMP_GRIPPER_OPEN_DEG)
+ *   clamp_gripper_close() → Servo_SetAngle(SERVO_GRIPPER, CLAMP_GRIPPER_CLOSE_DEG)
  *   clamp_rotate_set(deg) → Servo_SetAngle(SERVO_ROTATE, deg)
  */
 #ifndef __SERVO_H
@@ -23,7 +23,7 @@
 #include <stdbool.h>
 
 /* 舵机编号 */
-#define SERVO_GRIPPER  0   /* PA0 / TIM2_CH1  (0 - 180deg) */
+#define SERVO_GRIPPER  0   /* PA0 / TIM2_CH1  (0 - 270deg) */
 #define SERVO_ROTATE   1   /* PA2 / TIM2_CH3  (0 - 270deg) */
 #define SERVO_NUM      2
 
@@ -34,7 +34,7 @@
 #define SERVO_MAX_PULSE_US       2500        /* max deg 2.5ms */
 
 /* ---- 各舵机角度上限 ---- */
-#define SERVO_MAX_DEG_GRIPPER    180         /* 夹爪 */
+#define SERVO_MAX_DEG_GRIPPER    270         /* 夹爪 (0-270度舵机) */
 #define SERVO_MAX_DEG_ROTATE     270         /* 旋转 */
 
 /**
@@ -48,7 +48,7 @@ void Servo_Init(void);
 /**
  * @brief 设定舵机角度
  * @param id  舵机编号 SERVO_GRIPPER / SERVO_ROTATE
- * @param deg 目标角度: 夹爪 0~180deg, 旋转 0~270deg, 超出自动钳位
+ * @param deg 目标角度: 夹爪 0~270deg, 旋转 0~270deg, 超出自动钳位
  */
 void Servo_SetAngle(uint8_t id, uint16_t deg);
 

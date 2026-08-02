@@ -16,7 +16,7 @@ white = LED(4)                             # 照明灯
 
 # 色域阈值 (LAB格式，需根据实际环境微调)
 red_threshold    = ((25, 90, 25, 127, -10, 30))      # 红色
-yellow_threshold = ((45, 100, -20, 20, 30, 80))      # 黄色
+green_threshold  = ((31, 67, -50, -18, -29, 43))      # 绿色
 blue_threshold   = ((15, 80, -20, 15, -80, -25))     # 蓝色
 white_threshold  = ((70, 100, -20, 20, -15, 20))     # 白色 (L高, A/B近0)
 black_threshold  = ((0,  30,  -15, 15, -15, 15))     # 黑色 (L低, A/B近0)
@@ -40,7 +40,7 @@ def find_max(blobs):
 # ========== 发送应答帧（8字节，与十字检测协议一致）==========
 def send_response(status, mx, my):
     """
-    status: 0=未检测到, 1=红, 2=黄, 3=蓝, 4=白, 5=黑
+    status: 0=未检测到, 1=红, 2=绿, 3=蓝, 4=白, 5=黑
     mx, my: 色块中心像素坐标 (uint16)
     帧格式: [0xAA, 0x55, STATUS, MX_L, MX_H, MY_L, MY_H, XOR]  共8字节
     """
@@ -67,7 +67,7 @@ req_state = 0
 
 while(True):
     clock.tick()
-    white.on()
+    #white.on()
     
     # ---- 非阻塞检查串口，逐字节解析请求帧 ----
     request_ready = False
@@ -100,16 +100,16 @@ while(True):
             img = sensor.snapshot()
             
             # 五色识别（选面积最大的色块作为"突出色块"）
-            candidates = []    # (color_id, blob)，color_id: 1=红, 2=黄, 3=蓝, 4=白, 5=黑
-            colors = ((255, 0, 0), (255, 255, 0), (0, 0, 255), (255, 255, 255), (0, 0, 0))
-            labels = ("R", "Y", "B", "W", "K")
+            candidates = []    # (color_id, blob)，color_id: 1=红, 2=绿, 3=蓝, 4=白, 5=黑
+            colors = ((255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 255), (0, 0, 0))
+            labels = ("R", "G", "B", "W", "K")
             
             for b in img.find_blobs([red_threshold], merge=True):
                 if b.pixels() >= MIN_AREA:
                     candidates.append((1, b))     # 1=红
-            for b in img.find_blobs([yellow_threshold], merge=True):
+            for b in img.find_blobs([green_threshold], merge=True):
                 if b.pixels() >= MIN_AREA:
-                    candidates.append((2, b))     # 2=黄
+                    candidates.append((2, b))     # 2=绿
             for b in img.find_blobs([blue_threshold], merge=True):
                 if b.pixels() >= MIN_AREA:
                     candidates.append((3, b))     # 3=蓝
