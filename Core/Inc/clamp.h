@@ -32,7 +32,7 @@
 #define CLAMP_ROTATE_ZERO_DEG      75    /* 以此为0°基准, 范围 0~270 */
 
 /* ---- 夹爪开合角度定义 ---- */
-#define CLAMP_GRIPPER_OPEN_DEG     60      /* 夹爪张开角度 */
+#define CLAMP_GRIPPER_OPEN_DEG     50      /* 夹爪张开角度 */
 #define CLAMP_GRIPPER_CLOSE_DEG    90   /* 夹爪闭合角度 */
 
 /* ---- 默认梯形曲线参数(高度, 量纲 mm) ---- */

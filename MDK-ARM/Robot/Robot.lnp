@@ -21,6 +21,8 @@
 "robot\stm32f4xx_hal_timebase_tim.o"
 "robot\camera_color.o"
 "robot\system_stm32f4xx.o"
+"robot\cross_detect.o"
+"robot\taskflow.o"
 "robot\stm32f4xx_hal_tim.o"
 "robot\stm32f4xx_hal_tim_ex.o"
 "robot\stm32f4xx_hal_rcc.o"
